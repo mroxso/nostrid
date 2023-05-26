@@ -15,22 +15,27 @@ async function nostrGetUserinfo() {
             console.log(data[2].content)
             const username = JSON.parse(data[2].content)['username'];
             const displayName = JSON.parse(data[2].content)['displayName'];
+            const name = JSON.parse(data[2].content)['name'];
             const about = JSON.parse(data[2].content)['about'];
             const picture = JSON.parse(data[2].content)['picture'];
             const lightningAddress = JSON.parse(data[2].content)['lud16'];
             const website = JSON.parse(data[2].content)['website'];
-            document.title = `${displayName} (@${username})`;
-            document.getElementById('header-title').innerHTML = `${displayName}`;
+            document.title = `${name} (@${username})`;
+            document.getElementById('header-title').innerHTML = `${name}`;
             // document.getElementById('username').innerHTML = `${displayName}`;
             document.getElementById('about').innerHTML = `${about}`;
-            document.getElementById('about').style = "";
+            if(about != "")
+                document.getElementById('about').style = "";
             document.getElementById('picture').src = `${picture}`;
-            document.getElementById('picture').style = "";
+            if(picture != "")
+                document.getElementById('picture').style = "";
             document.getElementById('lud16').innerHTML = `⚡️ ${lightningAddress}`;
-            document.getElementById('lud16').style = "";
+            if(lightningAddress != "")
+                document.getElementById('lud16').style = "";
             document.getElementById('website').innerHTML = `🌎 ${website}`;
             document.getElementById('website').href = `${website}`;
-            document.getElementById('website').style = "";
+            if(website != "")
+                document.getElementById('website').style = "";
         } else if (data[0] === "EOSE") {
             relay.close();
         }
