@@ -26,9 +26,9 @@ async function nostrGetUserinfo() {
             document.getElementById('about').style = "";
             document.getElementById('picture').src = `${picture}`;
             document.getElementById('picture').style = "";
-            document.getElementById('lud16').innerHTML = `${lightningAddress}`;
+            document.getElementById('lud16').innerHTML = `⚡️ ${lightningAddress}`;
             document.getElementById('lud16').style = "";
-            document.getElementById('website').innerHTML = `${website}`;
+            document.getElementById('website').innerHTML = `🌎 ${website}`;
             document.getElementById('website').href = `${website}`;
             document.getElementById('website').style = "";
         } else if (data[0] === "EOSE") {
