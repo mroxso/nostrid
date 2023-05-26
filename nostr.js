@@ -3,7 +3,6 @@ const pubkey = "480ec1a7516406090dc042ddf67780ef30f26f3a864e83b417c053a5a611c838
 
 async function nostrGetUserinfo() {
     const relay = new WebSocket('wss://relay.nostr.band');
-    let name = "";
 
     let id = Math.floor(Math.random() * 10);
 
@@ -40,7 +39,6 @@ async function nostrGetUserinfo() {
 
 async function nostrGetPosts() {
     const relay = new WebSocket('wss://relay.nostr.band');
-    let name = "";
 
     let id = Math.floor(Math.random() * 10);
 
