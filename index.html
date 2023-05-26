@@ -14,7 +14,7 @@
 
     <nav>
         <div class="container">
-            <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+            <header class="d-flex flex-wrap justify-content-center py-3 mb-4">
                 <a href="/"
                     class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
                     <!-- <svg class="bi me-2" width="40" height="32">
@@ -23,9 +23,9 @@
                     <span id="header-title" class="fs-4">Loading Header..</span>
                 </a>
 
-                <ul class="nav nav-pills">
+                <!-- <ul class="nav nav-pills">
                     <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">Home</a></li>
-                </ul>
+                </ul> -->
             </header>
         </div>
     </nav>
@@ -33,19 +33,20 @@
     <div class="container">
         <div class="row">
             <div class="col col-lg-8">
-                <h3>Posts</h3>
+                <h3>Notes</h3>
                 <hr />
-                content will be here
-                <!-- <div id="posts-row" class="row row-cols-1 row-cols-sm-2 row-cols-md-1 g-1"></div>
-                </div> -->
+                <div id="content" >
+                </div>
             </div>
             <div class="col-sm">
                 <!-- <div class="vr"></div> -->
                 <!-- <p id="username">Loading Username..</p> -->
                 <h3>About</h3>
                 <hr />
-                <p id="about">Loading About..</p>
-                <img id="picture" src="https://via.placeholder.com/150" alt="picture">
+                <p id="about" style="visibility: hidden;">Loading About..</p>
+                <p>⚡️ <span id="lud16" style="visibility: hidden;">Loading Lightning Adress..</span></p>
+                <p>🌎 <a href="#" target="_blank" id="website" style="visibility: hidden;">Loading Website..</a></p>
+                <img id="picture" class="img-thumbnail" style="visibility: hidden;" src="https://via.placeholder.com/150" alt="picture">
             </div>
         </div>
     </div>
