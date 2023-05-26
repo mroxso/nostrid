@@ -17,9 +17,9 @@
             <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
                 <a href="/"
                     class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                    <svg class="bi me-2" width="40" height="32">
+                    <!-- <svg class="bi me-2" width="40" height="32">
                         <use xlink:href="#bootstrap"></use>
-                    </svg>
+                    </svg> -->
                     <span id="header-title" class="fs-4">Loading Header..</span>
                 </a>
 
@@ -33,11 +33,17 @@
     <div class="container">
         <div class="row">
             <div class="col-8">
+                <h3>Posts</h3>
+                <hr />
                 content will be here
+                <!-- <div id="posts-row" class="row row-cols-1 row-cols-sm-2 row-cols-md-1 g-1"></div>
+                </div> -->
             </div>
             <div class="col-4">
                 <!-- <div class="vr"></div> -->
-                <p id="username">Loading Username..</p>
+                <!-- <p id="username">Loading Username..</p> -->
+                <h3>About</h3>
+                <hr />
                 <p id="about">Loading About..</p>
                 <img id="picture" src="https://via.placeholder.com/150" alt="picture">
             </div>
@@ -56,6 +62,7 @@
     <script src="nostr.js"></script>
     <script>
         nostrGetUserinfo();
+        nostrGetPosts();
     </script>
 </body>
 
