@@ -1,7 +1,9 @@
-FROM nginx:latest
+FROM php:apache
 
-COPY . /usr/share/nginx/html
+COPY . /var/www/html
+
+RUN a2enmod rewrite
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["apache2-foreground"]
