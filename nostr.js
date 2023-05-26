@@ -13,9 +13,15 @@ async function nostrGetUserinfo() {
     relay.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (data[0] === "EVENT") {
-            const foundName = JSON.parse(data[2].content)['name'];
-            console.log("Found Name: " + foundName);
-            document.getElementById('header-title').innerHTML = `${foundName}`;
+            console.log(data[2].content)
+            const username = JSON.parse(data[2].content)['username'];
+            const displayName = JSON.parse(data[2].content)['displayName'];
+            const about = JSON.parse(data[2].content)['about'];
+            const picture = JSON.parse(data[2].content)['picture'];
+            document.getElementById('header-title').innerHTML = `${displayName}`;
+            document.getElementById('username').innerHTML = `${displayName}`;
+            document.getElementById('about').innerHTML = `${about}`;
+            document.getElementById('picture').src = `${picture}`;
         } else if (data[0] === "EOSE") {
             relay.close();
         }
