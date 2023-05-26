@@ -20,6 +20,7 @@ async function nostrGetUserinfo() {
             const picture = JSON.parse(data[2].content)['picture'];
             const lightningAddress = JSON.parse(data[2].content)['lud16'];
             const website = JSON.parse(data[2].content)['website'];
+            document.title = `${displayName} (@${username})`;
             document.getElementById('header-title').innerHTML = `${displayName}`;
             // document.getElementById('username').innerHTML = `${displayName}`;
             document.getElementById('about').innerHTML = `${about}`;
