@@ -1,5 +1,5 @@
-# nostr-profile-website
-Your nostr profile as your website!
+# nostrid
+View your nostr profile!
 
 # Setup
 1. Change to your own public key in nostr.js file
