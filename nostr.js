@@ -97,3 +97,9 @@ async function nostrGetPosts() {
         }
     }
 }
+
+function search() {
+    let search = document.getElementById('searchbox')
+    // console.log(search.value)
+    window.location.href = `/user/${search.value}`
+}
