@@ -12,6 +12,13 @@
 let pubkey = window.location.href.split("/").pop();
 // console.log(window.location.href)
 
+async function nostrLogin() {
+    let publicKey = await window.nostr.getPublicKey();
+    console.log("Public Key: " + publicKey);
+    window.location.href = `/user/${publicKey}`
+    return publicKey;
+}
+
 async function nostrGetUserinfo() {
     const relay = new WebSocket('wss://relay.nostr.band');
 
@@ -101,5 +108,11 @@ async function nostrGetPosts() {
 function search() {
     let search = document.getElementById('searchbox')
     // console.log(search.value)
-    window.location.href = `/user/${search.value}`
+    if(search.value == "") {
+        let publicKey = nostrLogin();
+        console.log(publicKey)
+        // window.location.href = `/user/${publicKey.data}`
+    } else {
+        window.location.href = `/user/${search.value}`
+    }
 }
