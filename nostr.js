@@ -1,13 +1,16 @@
-const urlParams = new URLSearchParams(window.location.search);
-let pubkey = urlParams.get('pubkey');
-if(pubkey == null) {
-    // pubkey = window.location.pathname.substr(1);
-    pubkey = window.location.pathname.substring(1);
-    if(pubkey == "") {
-        // CHANGE THIS TO YOUR OWN PUBLIC KEY (HEX FORMAT)
-        pubkey = "480ec1a7516406090dc042ddf67780ef30f26f3a864e83b417c053a5a611c838"
-    }
-}
+// const urlParams = new URLSearchParams(window.location.search);
+// let pubkey = urlParams.get('pubkey');
+// if(pubkey == null) {
+//     // pubkey = window.location.pathname.substr(1);
+//     pubkey = window.location.pathname.substring(1);
+//     if(pubkey == "") {
+//         // CHANGE THIS TO YOUR OWN PUBLIC KEY (HEX FORMAT)
+//         pubkey = "480ec1a7516406090dc042ddf67780ef30f26f3a864e83b417c053a5a611c838"
+//     }
+// }
+
+let pubkey = window.location.href.split("/").pop();
+// console.log(window.location.href)
 
 async function nostrGetUserinfo() {
     const relay = new WebSocket('wss://relay.nostr.band');

@@ -1,4 +1,3 @@
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/?$ /?pubkey=$1 [L,QSA]
+RewriteBase /
+RewriteRule ^user/(.*)$ user.html?pubkey=$1 [L,QSA]
