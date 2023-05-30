@@ -78,10 +78,14 @@ async function nostrGetPosts() {
         {
             kinds: [1],
             authors: [pubkey],
-            limit: 10
         }
     ])
     sub.on('event', data => {
+        // Only show posts without tags (no replies, etc.)
+        // if(data.tags.length != 0) {
+        //     return;
+        // }
+
         const content = data.content;
 
         var divCol = document.createElement('div');
