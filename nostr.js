@@ -109,6 +109,5 @@ async function nostrGetPosts() {
 
 function search() {
     let search = document.getElementById('searchbox')
-    hexnpub = window.NostrTools.nip19.decode(search.value).data
-    window.location.href = `/user/${hexnpub}`
+    window.location.href = `/user/${search.value}`
 }
