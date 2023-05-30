@@ -9,6 +9,9 @@
 //     }
 // }
 
+const pool = new window.NostrTools.SimplePool();
+let relays = ["wss://relay.nostr.band"];
+
 let pubkey = window.location.href.split("/").pop();
 if (pubkey.startsWith("npub")) {
     pubkey = window.NostrTools.nip19.decode(pubkey).data;
@@ -22,17 +25,7 @@ async function nostrLogin() {
 }
 
 async function nostrGetUserinfo() {
-    const relay = window.NostrTools.relayInit('wss://relay.nostr.band')
-    relay.on('connect', () => {
-        console.log(`connected to ${relay.url}`)
-    })
-    relay.on('error', () => {
-        console.log(`failed to connect to ${relay.url}`)
-    })
-
-    await relay.connect()
-
-    let sub = relay.sub([
+    let sub = pool.sub([...relays],[
         {
             kinds: [0],
             authors: [pubkey],
@@ -71,17 +64,7 @@ async function nostrGetUserinfo() {
 }
 
 async function nostrGetPosts() {
-    const relay = window.NostrTools.relayInit('wss://relay.nostr.band')
-    relay.on('connect', () => {
-        console.log(`connected to ${relay.url}`)
-    })
-    relay.on('error', () => {
-        console.log(`failed to connect to ${relay.url}`)
-    })
-
-    await relay.connect()
-
-    let sub = relay.sub([
+    let sub = pool.sub([...relays],[
         {
             kinds: [1],
             authors: [pubkey],
