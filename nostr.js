@@ -41,9 +41,19 @@ async function nostrGetUserinfo() {
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
-        document.title = `${name} (@${username})`;
-        document.getElementById('header-title').innerHTML = `${name}`;
-        // document.getElementById('username').innerHTML = `${displayName}`;
+        if(typeof displayName !== "undefined") {
+            document.getElementById('header-title').innerHTML = `${displayName}`;
+            document.title = `${displayName}`;
+        } else if (typeof name !== "undefined") {
+            document.getElementById('header-title').innerHTML = `${name}`;
+            document.title = `${name}`;
+        } else {
+            document.getElementById('header-title').innerHTML = `${username}`;
+            document.title = `${username}`;
+        }
+        if(typeof name !== "undefined" && typeof username !== "undefined") {
+            document.title = `${name} (@${username})`;
+        }
         document.getElementById('about').innerHTML = `${about}`;
         if (about != "")
             document.getElementById('about').style = "";
