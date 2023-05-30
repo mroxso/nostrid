@@ -109,5 +109,5 @@ async function nostrGetPosts() {
 
 function search() {
     let search = document.getElementById('searchbox')
-    window.location.href = `/user/${search.value}`
+    window.location.href = `/${search.value}`
 }

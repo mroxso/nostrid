@@ -1,3 +1,6 @@
 RewriteEngine On
-RewriteBase /
-RewriteRule ^user/(.*)$ user.html?pubkey=$1 [L,QSA]
+# if the requested URL is not a file or directory
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+
+RewriteRule ^(.*)$ user.html?pubkey=$1 [L,QSA]
