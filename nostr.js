@@ -10,7 +10,9 @@
 // }
 
 let pubkey = window.location.href.split("/").pop();
-// console.log(window.location.href)
+if(pubkey.startsWith("npub")) {
+    pubkey = window.NostrTools.nip19.decode(pubkey).data;
+}
 
 async function nostrLogin() {
     let publicKey = await window.nostr.getPublicKey();
@@ -107,12 +109,6 @@ async function nostrGetPosts() {
 
 function search() {
     let search = document.getElementById('searchbox')
-    // console.log(search.value)
-    if(search.value == "") {
-        let publicKey = nostrLogin();
-        console.log(publicKey)
-        // window.location.href = `/user/${publicKey.data}`
-    } else {
-        window.location.href = `/user/${search.value}`
-    }
+    hexnpub = window.NostrTools.nip19.decode(search.value).data
+    window.location.href = `/user/${hexnpub}`
 }
