@@ -20,7 +20,8 @@ if (pubkey.startsWith("npub")) {
 async function nostrLogin() {
     let publicKey = await window.nostr.getPublicKey();
     console.log("Public Key: " + publicKey);
-    window.location.href = `/user/${publicKey}`
+    let publicKeyEncoded = window.NostrTools.nip19.npubEncode(publicKey);
+    window.location.href = `/${publicKeyEncoded}`
     return publicKey;
 }
 
