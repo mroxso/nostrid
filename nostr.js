@@ -171,6 +171,7 @@ async function fetchTrendingProfilesFromNostrBand() {
     while(i < 8) {
         const profile = jsonData['profiles'][i]
         const pubkey = profile['pubkey']
+        const pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey)
         const newFollowersCount = profile['new_followers_count']
         // const name = profile['profile']['content']['name']
 
@@ -192,7 +193,7 @@ async function fetchTrendingProfilesFromNostrBand() {
 
         // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
         var imgCard = document.createElement("img");
-        let imgSrc = `https://robohash.org/${pubkey}`;
+        let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
         imgCard.setAttribute("src", imgSrc);
         imgCard.setAttribute("class", "card-img-top");
         imgCard.setAttribute("alt", "...");
