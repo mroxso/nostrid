@@ -192,7 +192,8 @@ async function fetchTrendingProfilesFromNostrBand() {
 
         // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
         var imgCard = document.createElement("img");
-        imgCard.setAttribute("src", "https://via.placeholder.com/150");
+        let imgSrc = `https://robohash.org/${pubkey}`;
+        imgCard.setAttribute("src", imgSrc);
         imgCard.setAttribute("class", "card-img-top");
         imgCard.setAttribute("alt", "...");
 
