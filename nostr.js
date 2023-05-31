@@ -173,13 +173,18 @@ async function fetchTrendingProfilesFromNostrBand() {
         const pubkey = profile['pubkey']
         const pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey)
         const newFollowersCount = profile['new_followers_count']
-        // const name = profile['profile']['content']['name']
+        const profileContent = JSON.parse(profile['profile']['content'])
+        const name = profileContent.name
+        const about = profileContent.about
+        const picture = profileContent.picture
+
+        // console.log(profileContent)
 
         // console.log("====================================")
         // console.log(profile)
         // console.log(pubkey)
         // console.log(newFollowersCount)
-        // // console.log(name)
+        // console.log(name)
         // // console.log("-->" + JSON.parse(JSON.stringify(JSON.parse(JSON.stringify(profile['profile']))['content'])['name']))
         // console.log("====================================")
 
@@ -194,6 +199,9 @@ async function fetchTrendingProfilesFromNostrBand() {
         // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
         var imgCard = document.createElement("img");
         let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
+        if(picture != null) {
+            imgSrc = picture;
+        }
         imgCard.setAttribute("src", imgSrc);
         imgCard.setAttribute("class", "card-img-top");
         imgCard.setAttribute("alt", "...");
@@ -205,16 +213,16 @@ async function fetchTrendingProfilesFromNostrBand() {
         // create h5 element with class "card-title" and inner text "Card title"
         var h5CardTitle = document.createElement("h5");
         h5CardTitle.setAttribute("class", "card-title");
-        h5CardTitle.innerText = pubkey;
+        h5CardTitle.innerText = name;
 
         // create p element with class "card-text" and inner text "Some quick example text to build on the card title and make up the bulk of the card's content."
         var pCardText = document.createElement("p");
         pCardText.setAttribute("class", "card-text");
-        pCardText.innerText = "Some quick example text to build on the card title and make up the bulk of the card's content.";
+        pCardText.innerText = about;
 
         // create a element with class "btn btn-primary" and inner text "Go somewhere" with href "#"
         var aBtnPrimary = document.createElement("a");
-        aBtnPrimary.setAttribute("href", "#");
+        aBtnPrimary.setAttribute("href", `/${pubkeyEncoded}`);
         aBtnPrimary.setAttribute("class", "btn btn-primary");
         aBtnPrimary.innerText = "View Profile";
 
