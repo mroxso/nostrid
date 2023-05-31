@@ -25,7 +25,7 @@ async function nostrLogin() {
 }
 
 async function nostrGetUserinfo() {
-    let sub = pool.sub([...relays],[
+    let sub = pool.sub([...relays], [
         {
             kinds: [0],
             authors: [pubkey],
@@ -41,7 +41,7 @@ async function nostrGetUserinfo() {
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
-        if(typeof displayName !== "undefined") {
+        if (typeof displayName !== "undefined") {
             document.getElementById('header-title').innerHTML = `${displayName}`;
             document.title = `${displayName}`;
         } else if (typeof name !== "undefined") {
@@ -51,7 +51,7 @@ async function nostrGetUserinfo() {
             document.getElementById('header-title').innerHTML = `${username}`;
             document.title = `${username}`;
         }
-        if(typeof name !== "undefined" && typeof username !== "undefined") {
+        if (typeof name !== "undefined" && typeof username !== "undefined") {
             document.title = `${name} (@${username})`;
         }
         document.getElementById('about').innerHTML = `${about}`;
@@ -74,7 +74,7 @@ async function nostrGetUserinfo() {
 }
 
 async function nostrGetPosts() {
-    let sub = pool.sub([...relays],[
+    let sub = pool.sub([...relays], [
         {
             kinds: [1],
             authors: [pubkey],
@@ -85,6 +85,8 @@ async function nostrGetPosts() {
         // if(data.tags.length != 0) {
         //     return;
         // }
+
+        // console.log(data)
 
         const content = data.content;
 
@@ -105,20 +107,40 @@ async function nostrGetPosts() {
         smallTextId.setAttribute('class', 'text-body-secondary');
         smallTextId.innerHTML = "id";
 
-        // TODO: SHOW ORIGINAL POST
-        // if(data[2].tags != null) {
+        // // START TODO SHOW ORIGINAL POST
+        // if (data.tags != null) {
         //     var tags = document.createElement('div');
         //     tags.setAttribute('class', 'tags');
-        //     for (let i = 0; i < data[2].tags.length; i++) {
-        //         const tag = data[2].tags[i];
-        //         var tagElement = document.createElement('span');
+        //     for (let i = 0; i < data.tags.length; i++) {
+        //         // exit if not a reply
+        //         // if (data.tags[i][0] != "e" && data.tags[i][3] != "reply") {
+        //         if(data.tags[i][0] != "e") {
+        //             continue;
+        //         }
 
-        //         tagElement.setAttribute('class', 'badge bg-secondary');
-        //         tagElement.innerHTML = tag;
-        //         tags.appendChild(tagElement);
+        //         const tag = data.tags[i][1];
+
+        //         let tagSub = pool.sub([...relays], [
+        //             {
+        //                 kinds: [1],
+        //                 id: [tag],
+        //                 limit: 1
+        //             }
+        //         ])
+        //         tagSub.on('event', data => {
+        //             var tagElement = document.createElement('span');
+
+        //             tagElement.setAttribute('class', 'badge bg-secondary');
+        //             tagElement.innerHTML = data.content;
+        //             tags.appendChild(tagElement);
+        //         })
+        //         tagSub.on('eose', () => {
+        //             tagSub.unsub()
+        //         })
         //     }
         //     divCardBody.appendChild(tags);
         // }
+        // // END TODO SHOW ORIGINAL POST
 
         divCardBody.appendChild(pCardText);
         // divCardBody.appendChild(smallTextId);
