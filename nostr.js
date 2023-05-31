@@ -187,7 +187,7 @@ async function fetchTrendingProfilesFromNostrBand() {
 
         // create div element with class "card m-2" and style "width: 18rem;"
         var divCard = document.createElement("div");
-        divCard.setAttribute("class", "card m-2");
+        divCard.setAttribute("class", "card m-2 mx-auto");
         divCard.setAttribute("style", "width: 18rem;");
 
         // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
