@@ -9,6 +9,8 @@
 //     }
 // }
 
+let userPubkey = window.localStorage.getItem("userPubkey");
+
 const pool = new window.NostrTools.SimplePool();
 let relays = ["wss://relay.nostr.band"];
 
@@ -22,7 +24,13 @@ async function nostrLogin() {
     console.log("Public Key: " + publicKey);
     let publicKeyEncoded = window.NostrTools.nip19.npubEncode(publicKey);
     window.location.href = `/${publicKeyEncoded}`
+    userPubkey = publicKey;
+    window.localStorage.setItem("userPubkey", userPubkey);
     return publicKey;
+}
+
+function nostrLogout() {
+    window.localStorage.clear();
 }
 
 async function nostrGetUserinfo() {
