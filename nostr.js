@@ -9,6 +9,8 @@
 //     }
 // }
 
+let userPubkey = window.localStorage.getItem("userPubkey");
+
 const pool = new window.NostrTools.SimplePool();
 let relays = ["wss://relay.nostr.band"];
 
@@ -20,12 +22,19 @@ if (pubkey.startsWith("npub")) {
 async function nostrLogin() {
     let publicKey = await window.nostr.getPublicKey();
     console.log("Public Key: " + publicKey);
-    window.location.href = `/user/${publicKey}`
+    let publicKeyEncoded = window.NostrTools.nip19.npubEncode(publicKey);
+    window.location.href = `/${publicKeyEncoded}`
+    userPubkey = publicKey;
+    window.localStorage.setItem("userPubkey", userPubkey);
     return publicKey;
 }
 
+function nostrLogout() {
+    window.localStorage.clear();
+}
+
 async function nostrGetUserinfo() {
-    let sub = pool.sub([...relays],[
+    let sub = pool.sub([...relays], [
         {
             kinds: [0],
             authors: [pubkey],
@@ -41,17 +50,26 @@ async function nostrGetUserinfo() {
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
-        if(typeof displayName !== "undefined") {
+
+        window.localStorage.setItem("about", about);
+        window.localStorage.setItem("picture", picture);
+        window.localStorage.setItem("lightningAddress", lightningAddress);
+        window.localStorage.setItem("website", website);
+
+        if (typeof displayName !== "undefined") {
             document.getElementById('header-title').innerHTML = `${displayName}`;
+            window.localStorage.setItem("name", displayName);
             document.title = `${displayName}`;
         } else if (typeof name !== "undefined") {
             document.getElementById('header-title').innerHTML = `${name}`;
+            window.localStorage.setItem("name", name);
             document.title = `${name}`;
         } else {
             document.getElementById('header-title').innerHTML = `${username}`;
+            window.localStorage.setItem("name", username);
             document.title = `${username}`;
         }
-        if(typeof name !== "undefined" && typeof username !== "undefined") {
+        if (typeof name !== "undefined" && typeof username !== "undefined") {
             document.title = `${name} (@${username})`;
         }
         document.getElementById('about').innerHTML = `${about}`;
@@ -74,7 +92,7 @@ async function nostrGetUserinfo() {
 }
 
 async function nostrGetPosts() {
-    let sub = pool.sub([...relays],[
+    let sub = pool.sub([...relays], [
         {
             kinds: [1],
             authors: [pubkey],
@@ -85,6 +103,8 @@ async function nostrGetPosts() {
         // if(data.tags.length != 0) {
         //     return;
         // }
+
+        // console.log(data)
 
         const content = data.content;
 
@@ -105,20 +125,40 @@ async function nostrGetPosts() {
         smallTextId.setAttribute('class', 'text-body-secondary');
         smallTextId.innerHTML = "id";
 
-        // TODO: SHOW ORIGINAL POST
-        // if(data[2].tags != null) {
+        // // START TODO SHOW ORIGINAL POST
+        // if (data.tags != null) {
         //     var tags = document.createElement('div');
         //     tags.setAttribute('class', 'tags');
-        //     for (let i = 0; i < data[2].tags.length; i++) {
-        //         const tag = data[2].tags[i];
-        //         var tagElement = document.createElement('span');
+        //     for (let i = 0; i < data.tags.length; i++) {
+        //         // exit if not a reply
+        //         // if (data.tags[i][0] != "e" && data.tags[i][3] != "reply") {
+        //         if(data.tags[i][0] != "e") {
+        //             continue;
+        //         }
 
-        //         tagElement.setAttribute('class', 'badge bg-secondary');
-        //         tagElement.innerHTML = tag;
-        //         tags.appendChild(tagElement);
+        //         const tag = data.tags[i][1];
+
+        //         let tagSub = pool.sub([...relays], [
+        //             {
+        //                 kinds: [1],
+        //                 id: [tag],
+        //                 limit: 1
+        //             }
+        //         ])
+        //         tagSub.on('event', data => {
+        //             var tagElement = document.createElement('span');
+
+        //             tagElement.setAttribute('class', 'badge bg-secondary');
+        //             tagElement.innerHTML = data.content;
+        //             tags.appendChild(tagElement);
+        //         })
+        //         tagSub.on('eose', () => {
+        //             tagSub.unsub()
+        //         })
         //     }
         //     divCardBody.appendChild(tags);
         // }
+        // // END TODO SHOW ORIGINAL POST
 
         divCardBody.appendChild(pCardText);
         // divCardBody.appendChild(smallTextId);
@@ -136,4 +176,85 @@ async function nostrGetPosts() {
 function search() {
     let search = document.getElementById('searchbox')
     window.location.href = `/${search.value}`
+}
+
+async function fetchTrendingProfilesFromNostrBand() {
+    const response = await fetch('https://api.nostr.band/v0/trending/profiles')
+    const jsonData = await response.json()
+
+    // console.log(jsonData['profiles'])
+
+    let i = 0;
+    // while(i < jsonData['profiles'].length) {
+    while(i < 8) {
+        const profile = jsonData['profiles'][i]
+        const pubkey = profile['pubkey']
+        const pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey)
+        const newFollowersCount = profile['new_followers_count']
+        const profileContent = JSON.parse(profile['profile']['content'])
+        const name = profileContent.name
+        const about = profileContent.about
+        const picture = profileContent.picture
+
+        // console.log(profileContent)
+
+        // console.log("====================================")
+        // console.log(profile)
+        // console.log(pubkey)
+        // console.log(newFollowersCount)
+        // console.log(name)
+        // // console.log("-->" + JSON.parse(JSON.stringify(JSON.parse(JSON.stringify(profile['profile']))['content'])['name']))
+        // console.log("====================================")
+
+        // create div element with class "row g-2" and id "trendingCards"
+        var divTrendingCards = document.getElementById("trendingCards");
+
+        // create div element with class "card m-2" and style "width: 18rem;"
+        var divCard = document.createElement("div");
+        divCard.setAttribute("class", "card m-2 mx-auto");
+        divCard.setAttribute("style", "width: 18rem;");
+
+        // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
+        var imgCard = document.createElement("img");
+        let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
+        if(picture != null) {
+            imgSrc = picture;
+        }
+        imgCard.setAttribute("src", imgSrc);
+        imgCard.setAttribute("class", "card-img-top");
+        imgCard.setAttribute("alt", "...");
+
+        // create div element with class "card-body"
+        var divCardBody = document.createElement("div");
+        divCardBody.setAttribute("class", "card-body");
+
+        // create h5 element with class "card-title" and inner text "Card title"
+        var h5CardTitle = document.createElement("h5");
+        h5CardTitle.setAttribute("class", "card-title");
+        h5CardTitle.innerText = name;
+
+        // create p element with class "card-text" and inner text "Some quick example text to build on the card title and make up the bulk of the card's content."
+        var pCardText = document.createElement("p");
+        pCardText.setAttribute("class", "card-text");
+        pCardText.innerText = about;
+
+        // create a element with class "btn btn-primary" and inner text "Go somewhere" with href "#"
+        var aBtnPrimary = document.createElement("a");
+        aBtnPrimary.setAttribute("href", `/${pubkeyEncoded}`);
+        aBtnPrimary.setAttribute("class", "btn btn-primary");
+        aBtnPrimary.innerText = "View Profile";
+
+        // append child elements to parent elements
+        divCardBody.appendChild(h5CardTitle);
+        divCardBody.appendChild(pCardText);
+        divCardBody.appendChild(aBtnPrimary);
+        divCard.appendChild(imgCard);
+        divCard.appendChild(divCardBody);
+        divTrendingCards.appendChild(divCard);
+
+        i++;
+    }
+
+    // console.log(jsonData)
+    // return jsonData
 }
