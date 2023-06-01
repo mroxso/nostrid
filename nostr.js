@@ -90,15 +90,12 @@ async function nostrGetUserinfo() {
 
         if (typeof displayName !== "undefined") {
             document.getElementById('header-title').innerHTML = `${displayName}`;
-            window.localStorage.setItem("name", displayName);
             document.title = `${displayName}`;
         } else if (typeof name !== "undefined") {
             document.getElementById('header-title').innerHTML = `${name}`;
-            window.localStorage.setItem("name", name);
             document.title = `${name}`;
         } else {
             document.getElementById('header-title').innerHTML = `${username}`;
-            window.localStorage.setItem("name", username);
             document.title = `${username}`;
         }
         if (typeof name !== "undefined" && typeof username !== "undefined") {
