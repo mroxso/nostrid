@@ -50,14 +50,23 @@ async function nostrGetUserinfo() {
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
+
+        window.localStorage.setItem("about", about);
+        window.localStorage.setItem("picture", picture);
+        window.localStorage.setItem("lightningAddress", lightningAddress);
+        window.localStorage.setItem("website", website);
+
         if (typeof displayName !== "undefined") {
             document.getElementById('header-title').innerHTML = `${displayName}`;
+            window.localStorage.setItem("name", displayName);
             document.title = `${displayName}`;
         } else if (typeof name !== "undefined") {
             document.getElementById('header-title').innerHTML = `${name}`;
+            window.localStorage.setItem("name", name);
             document.title = `${name}`;
         } else {
             document.getElementById('header-title').innerHTML = `${username}`;
+            window.localStorage.setItem("name", username);
             document.title = `${username}`;
         }
         if (typeof name !== "undefined" && typeof username !== "undefined") {

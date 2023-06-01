@@ -97,8 +97,8 @@
     <script>
         fetchTrendingProfilesFromNostrBand();
         if((window.localStorage.getItem("userPubkey") != null) || window.nostr == null) {
-            document.getElementById("loginButton").style.display = "none";
-            // document.getElementById("loginButton").innerHTML = '<a href=\"#\" class=\"nav-link active\" aria-current=\"page\" onclick=\"nostrLogout()\">Logout</a>';
+            // document.getElementById("loginButton").style.display = "none";
+            document.getElementById("loginButton").innerHTML = '<a href=\"#\" class=\"nav-link\">'+window.localStorage.getItem("name")+'</a>';
         }
     </script>
 </body>
