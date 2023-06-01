@@ -22,7 +22,7 @@
                 </a>
 
                 <ul class="nav nav-pills">
-                    <li class="nav-item"><a href="#" class="nav-link active" aria-current="page" onclick="nostrLogin()">Login</a></li>
+                    <li id="loginButton" class="nav-item"><a href="#" class="nav-link active" aria-current="page" onclick="nostrLogin()">Login</a></li>
                 </ul>
             </header>
         </div>
@@ -96,6 +96,10 @@
     <script src="/nostr.js"></script>
     <script>
         fetchTrendingProfilesFromNostrBand();
+        if((window.localStorage.getItem("userPubkey") != null) || window.nostr == null) {
+            document.getElementById("loginButton").style.display = "none";
+            // document.getElementById("loginButton").innerHTML = '<a href=\"#\" class=\"nav-link active\" aria-current=\"page\" onclick=\"nostrLogout()\">Logout</a>';
+        }
     </script>
 </body>
 
