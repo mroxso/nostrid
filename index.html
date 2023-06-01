@@ -96,7 +96,7 @@
     <script src="/nostr.js"></script>
     <script>
         fetchTrendingProfilesFromNostrBand();
-        if((window.localStorage.getItem("userPubkey") != null) || window.nostr == null) {
+        if(window.localStorage.getItem("name") != null) {
             // document.getElementById("loginButton").style.display = "none";
             document.getElementById("loginButton").innerHTML = '<a href=\"#\" class=\"nav-link\">'+window.localStorage.getItem("name")+'</a>';
         }

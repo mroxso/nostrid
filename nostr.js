@@ -26,11 +26,48 @@ async function nostrLogin() {
     window.location.href = `/${publicKeyEncoded}`
     userPubkey = publicKey;
     window.localStorage.setItem("userPubkey", userPubkey);
+    nostrGetLoginInfo();
     return publicKey;
 }
 
 function nostrLogout() {
     window.localStorage.clear();
+}
+
+async function nostrGetLoginInfo() {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [0],
+            authors: [pubkey],
+            limit: 1
+        }
+    ])
+    sub.on('event', data => {
+        // console.log(data.content)
+        const username = JSON.parse(data.content)['username'];
+        const displayName = JSON.parse(data.content)['displayName'];
+        const name = JSON.parse(data.content)['name'];
+        const about = JSON.parse(data.content)['about'];
+        const picture = JSON.parse(data.content)['picture'];
+        const lightningAddress = JSON.parse(data.content)['lud16'];
+        const website = JSON.parse(data.content)['website'];
+
+        window.localStorage.setItem("about", about);
+        window.localStorage.setItem("picture", picture);
+        window.localStorage.setItem("lightningAddress", lightningAddress);
+        window.localStorage.setItem("website", website);
+
+        if (typeof displayName !== "undefined") {
+            window.localStorage.setItem("name", displayName);
+        } else if (typeof name !== "undefined") {
+            window.localStorage.setItem("name", name);
+        } else {
+            window.localStorage.setItem("name", username);
+        }
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
 }
 
 async function nostrGetUserinfo() {
@@ -50,11 +87,6 @@ async function nostrGetUserinfo() {
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
-
-        window.localStorage.setItem("about", about);
-        window.localStorage.setItem("picture", picture);
-        window.localStorage.setItem("lightningAddress", lightningAddress);
-        window.localStorage.setItem("website", website);
 
         if (typeof displayName !== "undefined") {
             document.getElementById('header-title').innerHTML = `${displayName}`;
