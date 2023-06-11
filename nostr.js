@@ -133,7 +133,14 @@ async function nostrGetPosts() {
         //     return;
         // }
 
-        // console.log(data)
+        // console.log(data.tags)
+
+        // Only show posts without tags (no replies, etc.)
+        for(var i = 0; i < data.tags.length; i++) {
+            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+                return;
+            }
+        }
 
         const content = data.content;
 
@@ -240,7 +247,7 @@ async function fetchTrendingProfilesFromNostrBand() {
 
         // create div element with class "card m-2" and style "width: 18rem;"
         var divCard = document.createElement("div");
-        divCard.setAttribute("class", "card m-2 mx-auto");
+        divCard.setAttribute("class", "card m-2 mx-auto d-flex flex-column");
         divCard.setAttribute("style", "width: 18rem;");
 
         // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
@@ -270,7 +277,7 @@ async function fetchTrendingProfilesFromNostrBand() {
         // create a element with class "btn btn-primary" and inner text "Go somewhere" with href "#"
         var aBtnPrimary = document.createElement("a");
         aBtnPrimary.setAttribute("href", `/${pubkeyEncoded}`);
-        aBtnPrimary.setAttribute("class", "btn btn-primary");
+        aBtnPrimary.setAttribute("class", "btn btn-primary align-self-end");
         aBtnPrimary.innerText = "View Profile";
 
         // append child elements to parent elements
