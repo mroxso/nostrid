@@ -120,6 +120,7 @@ async function nostrGetUserinfo() {
     })
 }
 
+
 async function nostrGetPosts() {
     let sub = pool.sub([...relays], [
         {
@@ -143,65 +144,37 @@ async function nostrGetPosts() {
         }
 
         const content = data.content;
-
+        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const id = data.id;
+        
         var divCol = document.createElement('div');
         divCol.setAttribute('class', 'col');
+        
         var divCard = document.createElement('div');
         divCard.setAttribute('class', 'card shadow-sm');
+        
         var divCardBody = document.createElement('div');
         divCardBody.setAttribute('class', 'card-body');
+        
         var pCardText = document.createElement('p');
         pCardText.setAttribute('class', 'card-text');
         pCardText.innerHTML = content;
-        var smallText = document.createElement('small');
-        smallText.setAttribute('class', 'text-body-secondary');
-        smallText.innerHTML = "formattedTime";
-
-        var smallTextId = document.createElement('small');
-        smallTextId.setAttribute('class', 'text-body-secondary');
-        smallTextId.innerHTML = "id";
-
-        // // START TODO SHOW ORIGINAL POST
-        // if (data.tags != null) {
-        //     var tags = document.createElement('div');
-        //     tags.setAttribute('class', 'tags');
-        //     for (let i = 0; i < data.tags.length; i++) {
-        //         // exit if not a reply
-        //         // if (data.tags[i][0] != "e" && data.tags[i][3] != "reply") {
-        //         if(data.tags[i][0] != "e") {
-        //             continue;
-        //         }
-
-        //         const tag = data.tags[i][1];
-
-        //         let tagSub = pool.sub([...relays], [
-        //             {
-        //                 kinds: [1],
-        //                 id: [tag],
-        //                 limit: 1
-        //             }
-        //         ])
-        //         tagSub.on('event', data => {
-        //             var tagElement = document.createElement('span');
-
-        //             tagElement.setAttribute('class', 'badge bg-secondary');
-        //             tagElement.innerHTML = data.content;
-        //             tags.appendChild(tagElement);
-        //         })
-        //         tagSub.on('eose', () => {
-        //             tagSub.unsub()
-        //         })
-        //     }
-        //     divCardBody.appendChild(tags);
-        // }
-        // // END TODO SHOW ORIGINAL POST
-
+        
+        var smallTime = document.createElement('small');
+        smallTime.setAttribute('class', 'text-body-secondary');
+        smallTime.innerHTML = formattedTime;
+        
+        // var smallId = document.createElement('small');
+        // smallId.setAttribute('class', 'text-body-secondary');
+        // smallId.innerHTML = id;
+        
         divCardBody.appendChild(pCardText);
-        // divCardBody.appendChild(smallTextId);
-        // divCardBody.appendChild(smallText);
-
+        divCardBody.appendChild(smallTime);
+        // divCardBody.appendChild(smallId);
+        
         divCard.appendChild(divCardBody);
         divCol.appendChild(divCard);
+        
         document.getElementById('content').appendChild(divCol);
     })
     sub.on('eose', () => {
