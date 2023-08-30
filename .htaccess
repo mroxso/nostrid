@@ -1,6 +1,10 @@
 RewriteEngine On
-# if the requested URL is not a file or directory
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME} !-f
 
-RewriteRule ^(.*)$ user.html?pubkey=$1 [L,QSA]
+# Redirect example.com/p/test to user.html?pubkey=test
+RewriteRule ^p/(.*)$ user.html?pubkey=$1 [L,QSA]
+
+# Redirect example.com/n/test to note.html?note=test
+RewriteRule ^n/(.*)$ note.html?note=$1 [L,QSA]
+
+# Redirect example.com to index.html
+RewriteRule ^$ index.html [L]

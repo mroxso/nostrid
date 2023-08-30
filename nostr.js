@@ -14,9 +14,19 @@ let userPubkey = window.localStorage.getItem("userPubkey");
 const pool = new window.NostrTools.SimplePool();
 let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
 
-let pubkey = window.location.href.split("/").pop();
-if (pubkey.startsWith("npub")) {
-    pubkey = window.NostrTools.nip19.decode(pubkey).data;
+let pubkey = ""
+let note = ""
+
+if (window.location.href.split("/")[3] == 'p') {
+    pubkey = window.location.href.split("/").pop();
+    if (pubkey.startsWith("npub")) {
+        pubkey = window.NostrTools.nip19.decode(pubkey).data;
+    }
+} else if (window.location.href.split("/")[3] == 'n') {
+    note = window.location.href.split("/").pop();
+    if (note.startsWith("note")) {
+        note = window.NostrTools.nip19.decode(note).data;
+    }
 }
 
 async function nostrLogin() {
@@ -114,6 +124,102 @@ async function nostrGetUserinfo() {
         document.getElementById('website').href = `${website}`;
         if (website != "")
             document.getElementById('website').style = "";
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+}
+
+async function nostrGetPost(note) {
+    console.log(note)
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [1],
+            ids: [note],
+        }
+    ])
+    sub.on('event', data => {
+        console.log(data)
+        // Only show posts without tags (no replies, etc.)
+        // if(data.tags.length != 0) {
+        //     return;
+        // }
+
+        // console.log(data.tags)
+
+        // Only show posts without tags (no replies, etc.)
+        for(var i = 0; i < data.tags.length; i++) {
+            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+                return;
+            }
+        }
+
+        const content = data.content;
+        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const id = data.id;
+        const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
+        
+        var divCol = document.createElement('div');
+        divCol.setAttribute('class', 'col');
+        
+        var divCard = document.createElement('div');
+        divCard.setAttribute('class', 'card shadow-sm');
+        
+        var divCardBody = document.createElement('div');
+        divCardBody.setAttribute('class', 'card-body');
+        
+        var pCardText = document.createElement('p');
+        pCardText.setAttribute('class', 'card-text');
+        pCardText.innerHTML = content;
+        
+        var smallTime = document.createElement('small');
+        smallTime.setAttribute('class', 'text-body-secondary');
+        smallTime.innerHTML = formattedTime;
+        
+        // Buttons
+        var pButtons = document.createElement('p');
+        // Like Button
+        var btnLike = document.createElement('button');
+        var smallLikes = document.createElement('small');
+        smallLikes.setAttribute('class', 'text-body-secondary');
+        smallLikes.setAttribute('id', `likes-${id}`);
+        smallLikes.innerHTML = "0" + " 👍";
+        btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        btnLike.appendChild(smallLikes);
+        
+        // Zap Button
+        var btnZap = document.createElement('button');
+        var smallZap = document.createElement('small');
+        smallZap.setAttribute('class', 'text-body-secondary');
+        smallZap.setAttribute('id', `zap-${id}`);
+        smallZap.innerHTML = "0" + " ⚡️";
+        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
+        btnZap.appendChild(smallZap);
+
+        pButtons.appendChild(btnLike);
+        pButtons.appendChild(btnZap);
+
+        var pId = document.createElement('p');
+        var smallId = document.createElement('small');
+        smallId.setAttribute('class', 'text-body-secondary');
+        smallId.innerHTML = encodedNoteId;
+        pId.appendChild(smallId);
+        
+        divCardBody.appendChild(pCardText);
+        divCardBody.appendChild(pButtons);
+        divCardBody.appendChild(smallTime);
+        divCardBody.appendChild(pId);
+        
+        divCard.appendChild(divCardBody);
+        divCol.appendChild(divCard);
+        
+        document.getElementById('content').appendChild(divCol);
+        nostrGetLikesForPost(id);
+        nostrGetZapsForPost(id);
+        pubkey = data.pubkey;
+        nostrGetUserinfo();
     })
     sub.on('eose', () => {
         sub.unsub()
@@ -221,7 +327,7 @@ async function nostrGetLikesForPost(id) {
         }
     ])
     sub.on('event', data => {
-        console.log(data)
+        // console.log(data)
         const content = data.content;
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const reactionId = data.id;
@@ -245,7 +351,7 @@ async function nostrGetZapsForPost(id) {
         }
     ])
     sub.on('event', data => {
-        console.log(data)
+        // console.log(data)
         const content = data.content;
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const reactionId = data.id;
@@ -349,7 +455,7 @@ async function fetchTrendingProfilesFromNostrBand() {
 
         // create a element with class "btn btn-primary" and inner text "Go somewhere" with href "#"
         var aBtnPrimary = document.createElement("a");
-        aBtnPrimary.setAttribute("href", `/${pubkeyEncoded}`);
+        aBtnPrimary.setAttribute("href", `/p/${pubkeyEncoded}`);
         aBtnPrimary.setAttribute("class", "btn btn-primary align-self-end");
         aBtnPrimary.innerText = "View Profile";
 
