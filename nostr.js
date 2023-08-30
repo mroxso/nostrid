@@ -297,10 +297,12 @@ async function nostrGetPosts() {
         pButtons.appendChild(btnZap);
 
         var pId = document.createElement('p');
-        var smallId = document.createElement('small');
-        smallId.setAttribute('class', 'text-body-secondary');
-        smallId.innerHTML = encodedNoteId;
-        pId.appendChild(smallId);
+        var aId = document.createElement('a');
+        aId.setAttribute('class', 'text-body-secondary');
+        aId.setAttribute('href', `/n/${encodedNoteId}`);
+        aId.setAttribute('target', '_blank');
+        aId.innerHTML = encodedNoteId;
+        pId.appendChild(aId);
         
         divCardBody.appendChild(pCardText);
         divCardBody.appendChild(pButtons);
