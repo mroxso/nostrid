@@ -12,7 +12,7 @@
 let userPubkey = window.localStorage.getItem("userPubkey");
 
 const pool = new window.NostrTools.SimplePool();
-let relays = ["wss://relay.nostr.band", "wss://relay.layer.systems", "wss://relay.damus.io"];
+let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
 
 let pubkey = window.location.href.split("/").pop();
 if (pubkey.startsWith("npub")) {
@@ -249,11 +249,32 @@ async function nostrGetZapsForPost(id) {
         const content = data.content;
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const reactionId = data.id;
+        let sats = 0;
+        for(let i = 0; i < data.tags.length; i++) {
+            if(data.tags[i][0] == ('bolt11')) {
+                bolt11 = data.tags[i][1];
+                // Remove first 4 characters i.e. 'lnbc'
+                let inputStrWithoutPrefix = bolt11.slice(4);
+                // Get the number after 'lnbc'
+                let numberAfterPrefix = parseInt(bolt11.slice(4).match(/\d+/)[0]);
+                // Get the first letter after the number
+                let letterAfterNumber = inputStrWithoutPrefix.charAt(inputStrWithoutPrefix.search(/[a-zA-Z]/));
+                if(letterAfterNumber == 'm') {
+                    sats = Math.round((numberAfterPrefix * 0.001) * 100000000);
+                } else if(letterAfterNumber == 'u') {
+                    sats = Math.round((numberAfterPrefix * 0.000001) * 100000000);
+                } else if(letterAfterNumber == 'n') {
+                    sats = Math.round((numberAfterPrefix * 0.000000001) * 100000000);
+                } else if(letterAfterNumber == 'p') {
+                    sats = Math.round((numberAfterPrefix * 0.000000000001) * 100000000);
+                }
+            }
+        }
 
         if(content != "-") {
             zapId = `zap-${id}`
             zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
-            document.getElementById(zapId).innerHTML = `${zapCounter + 1} ⚡️`
+            document.getElementById(zapId).innerHTML = `${zapCounter + sats} ⚡️`
         }
     })
     sub.on('eose', () => {
