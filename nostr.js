@@ -164,18 +164,70 @@ async function nostrGetPosts() {
         smallTime.setAttribute('class', 'text-body-secondary');
         smallTime.innerHTML = formattedTime;
         
-        // var smallId = document.createElement('small');
-        // smallId.setAttribute('class', 'text-body-secondary');
-        // smallId.innerHTML = id;
+        // Buttons
+        var pButtons = document.createElement('p');
+        // Like Button
+        var btnLike = document.createElement('button');
+        var smallLikes = document.createElement('small');
+        smallLikes.setAttribute('class', 'text-body-secondary');
+        smallLikes.setAttribute('id', `likes-${id}`);
+        smallLikes.innerHTML = "0" + " 👍";
+        btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        btnLike.appendChild(smallLikes);
+        
+        // Zap Button
+        var btnZap = document.createElement('button');
+        var smallZap = document.createElement('small');
+        smallZap.setAttribute('class', 'text-body-secondary');
+        smallZap.innerHTML = "0" + " ⚡️";
+        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
+        btnZap.appendChild(smallZap);
+
+        pButtons.appendChild(btnLike);
+        pButtons.appendChild(btnZap);
+
+        var pId = document.createElement('p');
+        var smallId = document.createElement('small');
+        smallId.setAttribute('class', 'text-body-secondary');
+        smallId.innerHTML = id;
+        pId.appendChild(smallId);
         
         divCardBody.appendChild(pCardText);
+        divCardBody.appendChild(pButtons);
         divCardBody.appendChild(smallTime);
-        // divCardBody.appendChild(smallId);
+        divCardBody.appendChild(pId);
         
         divCard.appendChild(divCardBody);
         divCol.appendChild(divCard);
         
         document.getElementById('content').appendChild(divCol);
+        nostrGetLikesForPost(id);
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+}
+
+async function nostrGetLikesForPost(id) {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [7],
+            "#e": [id],
+        }
+    ])
+    sub.on('event', data => {
+        console.log(data)
+        const content = data.content;
+        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const reactionId = data.id;
+
+        if(content != "-") {
+            likesId = `likes-${id}`
+            likesCounter = parseInt(document.getElementById(likesId).innerHTML.split(" ")[0])
+            document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`
+        }
     })
     sub.on('eose', () => {
         sub.unsub()
