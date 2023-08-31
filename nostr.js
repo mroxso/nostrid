@@ -291,6 +291,7 @@ async function nostrGetPosts() {
             
             var divCard = document.createElement('div');
             divCard.setAttribute('class', 'card shadow-sm');
+            divCard.setAttribute('id', `card-${id}`);
             
             var divCardBody = document.createElement('div');
             divCardBody.setAttribute('class', 'card-body');
@@ -489,6 +490,8 @@ async function nostrGetZapsForPost(id) {
     ])
     sub.on('event', data => {
         // console.log(data)
+        zapId = `zap-${id}`
+        zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
         const content = data.content;
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const reactionId = data.id;
@@ -515,9 +518,16 @@ async function nostrGetZapsForPost(id) {
         }
 
         if(content != "-") {
-            zapId = `zap-${id}`
-            zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
             document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
+        }
+
+        // colorize note card based on sats received
+        if(zapCounter + sats > 420 && zapCounter + sats < 1337) {
+            document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-info');
+        } else if(zapCounter + sats > 1337 && zapCounter + sats < 5000) {
+            document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-warning');
+        } else if(zapCounter + sats > 5000 && zapCounter + sats < 10000) {
+            document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-danger');
         }
     })
     sub.on('eose', () => {
