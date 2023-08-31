@@ -57,7 +57,7 @@ async function nostrGetLoginInfo() {
         const username = JSON.parse(data.content)['username'];
         const displayName = JSON.parse(data.content)['displayName'];
         const name = JSON.parse(data.content)['name'];
-        const about = JSON.parse(data.content)['about'];
+        const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");;
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
@@ -93,7 +93,7 @@ async function nostrGetUserinfo() {
         const username = JSON.parse(data.content)['username'];
         const displayName = JSON.parse(data.content)['displayName'];
         const name = JSON.parse(data.content)['name'];
-        const about = JSON.parse(data.content)['about'];
+        const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
@@ -154,7 +154,7 @@ async function nostrGetPost(note) {
             }
         }
 
-        const content = data.content;
+        const content = data.content.replace(/\r?\n/g, "<br>");
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const id = data.id;
         const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
@@ -268,7 +268,7 @@ async function nostrGetPosts() {
                 }
             }
 
-            const content = data.content;
+            const content = data.content.replace(/\r?\n/g, "<br>");
             const formattedTime = new Date(data.created_at*1000).toLocaleString();
             const id = data.id;
             const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
