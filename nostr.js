@@ -17,6 +17,13 @@ let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.win
 let pubkey = ""
 let note = ""
 
+let loginButton = document.getElementById('loginButton');
+let logoutButton = document.getElementById('logoutButton');
+if(userPubkey != null && loginButton != null) {
+    loginButton.style.display = "none";
+    logoutButton.style.display = "block";
+}
+
 if (window.location.href.split("/")[3] == 'p') {
     pubkey = window.location.href.split("/").pop();
     if (pubkey.startsWith("npub")) {
@@ -33,7 +40,7 @@ async function nostrLogin() {
     let publicKey = await window.nostr.getPublicKey();
     console.log("Public Key: " + publicKey);
     let publicKeyEncoded = window.NostrTools.nip19.npubEncode(publicKey);
-    window.location.href = `/${publicKeyEncoded}`
+    window.location.href = `/p/${publicKeyEncoded}`
     userPubkey = publicKey;
     window.localStorage.setItem("userPubkey", userPubkey);
     nostrGetLoginInfo();
@@ -42,6 +49,7 @@ async function nostrLogin() {
 
 function nostrLogout() {
     window.localStorage.clear();
+    window.location.href = `/`;
 }
 
 async function nostrGetLoginInfo() {
