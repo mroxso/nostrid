@@ -186,6 +186,10 @@ async function nostrGetPost(note) {
         
         // Buttons
         var pButtons = document.createElement('p');
+        var btnGroup = document.createElement('div');
+        btnGroup.setAttribute('class', 'btn-group');
+        btnGroup.setAttribute('role', 'group');
+        btnGroup.setAttribute('aria-label', 'note-button-group');
         // Like Button
         var btnLike = document.createElement('button');
         var smallLikes = document.createElement('small');
@@ -201,13 +205,14 @@ async function nostrGetPost(note) {
         var smallZap = document.createElement('small');
         smallZap.setAttribute('class', 'text-body-secondary');
         smallZap.setAttribute('id', `zap-${id}`);
-        smallZap.innerHTML = "0" + " ⚡️";
-        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        smallZap.innerHTML = "0" + " sats ⚡️";
+        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
         btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
         btnZap.appendChild(smallZap);
 
-        pButtons.appendChild(btnLike);
-        pButtons.appendChild(btnZap);
+        btnGroup.appendChild(btnLike);
+        btnGroup.appendChild(btnZap);
+        pButtons.appendChild(btnGroup);
 
         var pId = document.createElement('p');
         var smallId = document.createElement('small');
@@ -300,6 +305,10 @@ async function nostrGetPosts() {
             
             // Buttons
             var pButtons = document.createElement('p');
+            var btnGroup = document.createElement('div');
+            btnGroup.setAttribute('class', 'btn-group');
+            btnGroup.setAttribute('role', 'group');
+            btnGroup.setAttribute('aria-label', 'note-button-group');
             // Like Button
             var btnLike = document.createElement('button');
             var smallLikes = document.createElement('small');
@@ -321,8 +330,9 @@ async function nostrGetPosts() {
             btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
             btnZap.appendChild(smallZap);
 
-            pButtons.appendChild(btnLike);
-            pButtons.appendChild(btnZap);
+            btnGroup.appendChild(btnLike);
+            btnGroup.appendChild(btnZap);
+            pButtons.appendChild(btnGroup);
 
             var pId = document.createElement('p');
             var aId = document.createElement('a');
