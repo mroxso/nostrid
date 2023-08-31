@@ -298,6 +298,7 @@ async function nostrGetPosts() {
             smallLikes.setAttribute('class', 'text-body-secondary');
             smallLikes.setAttribute('id', `likes-${id}`);
             smallLikes.innerHTML = "0" + " 👍";
+            btnLike.setAttribute('id', `btn-like-${id}`);
             btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
             btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
             btnLike.appendChild(smallLikes);
@@ -430,6 +431,7 @@ async function nostrGetPosts() {
 }
 
 async function nostrGetLikesForPost(id) {
+    let userLiked = false;
     let sub = pool.sub([...relays], [
         {
             kinds: [7],
@@ -443,9 +445,16 @@ async function nostrGetLikesForPost(id) {
         const reactionId = data.id;
 
         if(content != "-") {
-            likesId = `likes-${id}`
+            likesId = `likes-${id}`;
+            btnLikeId = `btn-like-${id}`;
             likesCounter = parseInt(document.getElementById(likesId).innerHTML.split(" ")[0])
-            document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`
+            if(data.pubkey == userPubkey || userLiked) {
+                // console.log(userPubkey + " liked post with id " + id)
+                document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
+                // document.getElementById(likesId).innerHTML = `${likesCounter + 1} 🫂`;
+                userLiked = true;
+            }
+            document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`;
         }
     })
     sub.on('eose', () => {
