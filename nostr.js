@@ -172,7 +172,8 @@ async function nostrGetPost(note) {
         
         var divCard = document.createElement('div');
         divCard.setAttribute('class', 'card shadow-sm');
-        
+        divCard.setAttribute('id', `card-${id}`);
+
         var divCardBody = document.createElement('div');
         divCardBody.setAttribute('class', 'card-body');
         
@@ -196,6 +197,7 @@ async function nostrGetPost(note) {
         smallLikes.setAttribute('class', 'text-body-secondary');
         smallLikes.setAttribute('id', `likes-${id}`);
         smallLikes.innerHTML = "0" + " 👍";
+        btnLike.setAttribute('id', `btn-like-${id}`);
         btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
         btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
         btnLike.appendChild(smallLikes);
@@ -522,17 +524,22 @@ async function nostrGetZapsForPost(id) {
         }
 
         // colorize note card based on sats received
-        if(zapCounter + sats > 420 && zapCounter + sats < 1337) {
-            document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-info');
-        } else if(zapCounter + sats > 1337 && zapCounter + sats < 5000) {
-            document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-warning');
-        } else if(zapCounter + sats > 5000 && zapCounter + sats < 10000) {
-            document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-danger');
-        }
+        colorizeNoteCard(id, zapCounter, sats);
     })
     sub.on('eose', () => {
         sub.unsub()
     })
+}
+
+async function colorizeNoteCard(id, zapCounter, sats) {
+    // colorize note card based on sats received
+    if(zapCounter + sats > 420 && zapCounter + sats < 1337) {
+        document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-info');
+    } else if(zapCounter + sats > 1337 && zapCounter + sats < 5000) {
+        document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-warning');
+    } else if(zapCounter + sats > 5000 && zapCounter + sats < 10000) {
+        document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-danger');
+}
 }
 
 function search() {
