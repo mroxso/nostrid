@@ -309,7 +309,7 @@ async function nostrGetPosts() {
             smallZap.setAttribute('class', 'text-body-secondary');
             smallZap.setAttribute('id', `zap-${id}`);
             smallZap.innerHTML = "0" + " ⚡️";
-            btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+            btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
             btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
             btnZap.appendChild(smallZap);
 
