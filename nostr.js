@@ -527,7 +527,7 @@ async function nostrGetZapsForPost(id) {
 
 function search() {
     let search = document.getElementById('searchbox')
-    window.location.href = `/${search.value}`
+    window.location.href = `/p/${search.value}`
 }
 
 async function fetchTrendingProfilesFromNostrBand() {
