@@ -316,7 +316,7 @@ async function nostrGetPosts() {
             var smallZap = document.createElement('small');
             smallZap.setAttribute('class', 'text-body-secondary');
             smallZap.setAttribute('id', `zap-${id}`);
-            smallZap.innerHTML = "0" + " ⚡️";
+            smallZap.innerHTML = "0" + " sats ⚡️";
             btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
             btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
             btnZap.appendChild(smallZap);
@@ -507,7 +507,7 @@ async function nostrGetZapsForPost(id) {
         if(content != "-") {
             zapId = `zap-${id}`
             zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
-            document.getElementById(zapId).innerHTML = `${zapCounter + sats} ⚡️`
+            document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
         }
     })
     sub.on('eose', () => {
