@@ -171,7 +171,7 @@ async function nostrGetUserStatus() {
             document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
         }
         if (status != "")
-            document.getElementById('status').style = "";
+            document.getElementById('status-div').style = "";
     })
     sub.on('eose', () => {
         sub.unsub()
