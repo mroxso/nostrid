@@ -54,6 +54,8 @@ async function nostrNewNote() {
     let signedEvent = await window.nostr.signEvent(event);
     console.log(signedEvent);
     pool.publish([...relays], signedEvent);
+    idToNote = window.NostrTools.nip19.noteEncode(signedEvent.id);
+    window.location.href = `/n/${idToNote}`
 }
 
 async function nostrLogin() {
