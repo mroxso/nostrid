@@ -22,9 +22,11 @@ let note = ""
 
 let loginButton = document.getElementById('loginButton');
 let logoutButton = document.getElementById('logoutButton');
+let noteButton = document.getElementById('noteButton');
 if(userPubkey != null && loginButton != null) {
     loginButton.style.display = "none";
     logoutButton.style.display = "block";
+    noteButton.style.display = "block";
 }
 
 if (window.location.href.split("/")[3] == 'p') {
@@ -37,6 +39,21 @@ if (window.location.href.split("/")[3] == 'p') {
     if (note.startsWith("note")) {
         note = window.NostrTools.nip19.decode(note).data;
     }
+}
+
+async function nostrNewNote() {
+    content = document.getElementById('newNoteText').value;
+    console.log(content);
+    let event = {
+        kind: 1,
+        pubkey: pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: content,
+    }
+    let signedEvent = await window.nostr.signEvent(event);
+    console.log(signedEvent);
+    // TODO: Publish signed event
 }
 
 async function nostrLogin() {
