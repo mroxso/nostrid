@@ -152,8 +152,24 @@ async function nostrGetUserStatus() {
     ])
     sub.on('event', data => {
         console.log(data.content)
-        const status = data.content
-        document.getElementById('status').innerHTML = `${status}`;
+        const status = data.content;
+        let statusLink = "";
+        for(tag of data.tags) {
+            if(tag[0] == "r") {
+                statusLink = tag[1];
+            } else if(tag[0] == "p") {
+                statusLink = tag[1];
+            } else if(tag[0] == "e") {
+                statusLink = tag[1];
+            } else if(tag[0] == "a") {
+                statusLink = tag[1];
+            }
+        }
+        if(statusLink == "") {
+            document.getElementById('status').innerHTML = `${status}`;
+        } else {
+            document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
+        }
         if (status != "")
             document.getElementById('status').style = "";
     })
