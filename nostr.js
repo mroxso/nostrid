@@ -92,6 +92,7 @@ async function nostrGetLoginInfo() {
 }
 
 async function nostrGetUserinfo() {
+    nostrGetUserStatus();
     let sub = pool.sub([...relays], [
         {
             kinds: [0],
@@ -140,6 +141,42 @@ async function nostrGetUserinfo() {
         sub.unsub()
     })
 }
+
+async function nostrGetUserStatus() {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [30315],
+            authors: [pubkey],
+            limit: 1
+        }
+    ])
+    sub.on('event', data => {
+        console.log(data.content)
+        const status = data.content;
+        let statusLink = "";
+        for(tag of data.tags) {
+            if(tag[0] == "r") {
+                statusLink = tag[1];
+            } else if(tag[0] == "p") {
+                statusLink = tag[1];
+            } else if(tag[0] == "e") {
+                statusLink = tag[1];
+            } else if(tag[0] == "a") {
+                statusLink = tag[1];
+            }
+        }
+        if(statusLink == "") {
+            document.getElementById('status').innerHTML = `${status}`;
+        } else {
+            document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
+        }
+        if (status != "")
+            document.getElementById('status-div').style = "";
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+} 
 
 async function nostrGetPost(note) {
     console.log(note)
