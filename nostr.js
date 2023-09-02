@@ -13,7 +13,9 @@ let userPubkey = window.localStorage.getItem("userPubkey");
 
 const pool = new window.NostrTools.SimplePool();
 // let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
-let relays = ["wss://relay.damus.io"];
+// let relays = ["wss://relay.damus.io"];
+let relays = ["wss://relay.nostr.band"];
+
 
 let pubkey = ""
 let note = ""
