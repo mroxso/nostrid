@@ -92,6 +92,7 @@ async function nostrGetLoginInfo() {
 }
 
 async function nostrGetUserinfo() {
+    nostrGetUserStatus();
     let sub = pool.sub([...relays], [
         {
             kinds: [0],
@@ -140,6 +141,26 @@ async function nostrGetUserinfo() {
         sub.unsub()
     })
 }
+
+async function nostrGetUserStatus() {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [30315],
+            authors: [pubkey],
+            limit: 1
+        }
+    ])
+    sub.on('event', data => {
+        console.log(data.content)
+        const status = data.content
+        document.getElementById('status').innerHTML = `${status}`;
+        if (status != "")
+            document.getElementById('status').style = "";
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+} 
 
 async function nostrGetPost(note) {
     console.log(note)
