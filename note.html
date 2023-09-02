@@ -34,9 +34,8 @@
     <div class="container">
         <div class="row grid gap-5">
             <div class="col col-lg-8">
-                <h3>Notes</h3>
+                <h3>Note</h3>
                 <hr />
-                <span id="notes-loading" class="fs-4">Loading Notes..</span>
                 <div id="content" class="row row-cols-1 row-cols-sm-2 row-cols-md-1 g-2">
                 </div>
             </div>
@@ -64,8 +63,8 @@
         crossorigin="anonymous"></script>
     <script src="/nostr.js"></script>
     <script>
-        nostrGetUserinfo();
-        nostrGetPosts();
+        // nostrGetUserinfo();
+        nostrGetPost(note);
     </script>
 </body>
 

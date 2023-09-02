@@ -12,18 +12,38 @@
 let userPubkey = window.localStorage.getItem("userPubkey");
 
 const pool = new window.NostrTools.SimplePool();
+// let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
+// let relays = ["wss://relay.damus.io"];
 let relays = ["wss://relay.nostr.band"];
 
-let pubkey = window.location.href.split("/").pop();
-if (pubkey.startsWith("npub")) {
-    pubkey = window.NostrTools.nip19.decode(pubkey).data;
+
+let pubkey = ""
+let note = ""
+
+let loginButton = document.getElementById('loginButton');
+let logoutButton = document.getElementById('logoutButton');
+if(userPubkey != null && loginButton != null) {
+    loginButton.style.display = "none";
+    logoutButton.style.display = "block";
+}
+
+if (window.location.href.split("/")[3] == 'p') {
+    pubkey = window.location.href.split("/").pop();
+    if (pubkey.startsWith("npub")) {
+        pubkey = window.NostrTools.nip19.decode(pubkey).data;
+    }
+} else if (window.location.href.split("/")[3] == 'n') {
+    note = window.location.href.split("/").pop();
+    if (note.startsWith("note")) {
+        note = window.NostrTools.nip19.decode(note).data;
+    }
 }
 
 async function nostrLogin() {
     let publicKey = await window.nostr.getPublicKey();
     console.log("Public Key: " + publicKey);
     let publicKeyEncoded = window.NostrTools.nip19.npubEncode(publicKey);
-    window.location.href = `/${publicKeyEncoded}`
+    window.location.href = `/p/${publicKeyEncoded}`
     userPubkey = publicKey;
     window.localStorage.setItem("userPubkey", userPubkey);
     nostrGetLoginInfo();
@@ -32,6 +52,7 @@ async function nostrLogin() {
 
 function nostrLogout() {
     window.localStorage.clear();
+    window.location.href = `/`;
 }
 
 async function nostrGetLoginInfo() {
@@ -47,7 +68,7 @@ async function nostrGetLoginInfo() {
         const username = JSON.parse(data.content)['username'];
         const displayName = JSON.parse(data.content)['displayName'];
         const name = JSON.parse(data.content)['name'];
-        const about = JSON.parse(data.content)['about'];
+        const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");;
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
@@ -83,7 +104,7 @@ async function nostrGetUserinfo() {
         const username = JSON.parse(data.content)['username'];
         const displayName = JSON.parse(data.content)['displayName'];
         const name = JSON.parse(data.content)['name'];
-        const about = JSON.parse(data.content)['about'];
+        const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");
         const picture = JSON.parse(data.content)['picture'];
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
@@ -120,15 +141,16 @@ async function nostrGetUserinfo() {
     })
 }
 
-
-async function nostrGetPosts() {
+async function nostrGetPost(note) {
+    console.log(note)
     let sub = pool.sub([...relays], [
         {
             kinds: [1],
-            authors: [pubkey],
+            ids: [note],
         }
     ])
     sub.on('event', data => {
+        console.log(data)
         // Only show posts without tags (no replies, etc.)
         // if(data.tags.length != 0) {
         //     return;
@@ -143,15 +165,129 @@ async function nostrGetPosts() {
             }
         }
 
-        const content = data.content;
+        const content = data.content.replace(/\r?\n/g, "<br>");
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const id = data.id;
+        const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
         
         var divCol = document.createElement('div');
         divCol.setAttribute('class', 'col');
         
         var divCard = document.createElement('div');
         divCard.setAttribute('class', 'card shadow-sm');
+        divCard.setAttribute('id', `card-${id}`);
+
+        var divCardBody = document.createElement('div');
+        divCardBody.setAttribute('class', 'card-body');
+        
+        var pCardText = document.createElement('p');
+        pCardText.setAttribute('class', 'card-text');
+        pCardText.innerHTML = content;
+        
+        var smallTime = document.createElement('small');
+        smallTime.setAttribute('class', 'text-body-secondary');
+        smallTime.innerHTML = formattedTime;
+        
+        // Buttons
+        var pButtons = document.createElement('p');
+        var btnGroup = document.createElement('div');
+        btnGroup.setAttribute('class', 'btn-group');
+        btnGroup.setAttribute('role', 'group');
+        btnGroup.setAttribute('aria-label', 'note-button-group');
+        // Like Button
+        var btnLike = document.createElement('button');
+        var smallLikes = document.createElement('small');
+        smallLikes.setAttribute('class', 'text-body-secondary');
+        smallLikes.setAttribute('id', `likes-${id}`);
+        smallLikes.innerHTML = "0" + " 👍";
+        btnLike.setAttribute('id', `btn-like-${id}`);
+        btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        btnLike.appendChild(smallLikes);
+        
+        // Zap Button
+        var btnZap = document.createElement('button');
+        var smallZap = document.createElement('small');
+        smallZap.setAttribute('class', 'text-body-secondary');
+        smallZap.setAttribute('id', `zap-${id}`);
+        smallZap.innerHTML = "0" + " sats ⚡️";
+        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
+        btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
+        btnZap.appendChild(smallZap);
+
+        btnGroup.appendChild(btnLike);
+        btnGroup.appendChild(btnZap);
+        pButtons.appendChild(btnGroup);
+
+        var pId = document.createElement('p');
+        var smallId = document.createElement('small');
+        smallId.setAttribute('class', 'text-body-secondary');
+        smallId.innerHTML = encodedNoteId;
+        pId.appendChild(smallId);
+        
+        divCardBody.appendChild(pCardText);
+        divCardBody.appendChild(pButtons);
+        divCardBody.appendChild(smallTime);
+        divCardBody.appendChild(pId);
+        
+        divCard.appendChild(divCardBody);
+        divCol.appendChild(divCard);
+        
+        document.getElementById('content').appendChild(divCol);
+        nostrGetLikesForPost(id);
+        nostrGetZapsForPost(id);
+        pubkey = data.pubkey;
+        nostrGetUserinfo();
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+}
+
+
+async function nostrGetPosts() {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [1],
+            authors: [pubkey],
+        }
+    ])
+
+    // Sorting logic
+    var dataArray = []; // Create an array to store the data
+
+    sub.on('event', data => {
+        document.getElementById('notes-loading').style.display = "none";
+
+        dataArray.push(data); // Push each data object into the array
+
+        // -- START UNSORTED LOADING -- //
+        // Your existing code to create and append elements goes here
+        // Only show posts without tags (no replies, etc.)
+        // if(data.tags.length != 0) {
+        //     return;
+        // }
+
+        // console.log(data.tags)
+
+        // Only show posts without tags (no replies, etc.)
+        for(var i = 0; i < data.tags.length; i++) {
+            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+                return;
+            }
+        }
+
+        const content = data.content.replace(/\r?\n/g, "<br>");
+        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const id = data.id;
+        const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
+        
+        var divCol = document.createElement('div');
+        divCol.setAttribute('class', 'col');
+        
+        var divCard = document.createElement('div');
+        divCard.setAttribute('class', 'card shadow-sm');
+        divCard.setAttribute('id', `card-${id}`);
         
         var divCardBody = document.createElement('div');
         divCardBody.setAttribute('class', 'card-body');
@@ -164,27 +300,260 @@ async function nostrGetPosts() {
         smallTime.setAttribute('class', 'text-body-secondary');
         smallTime.innerHTML = formattedTime;
         
-        // var smallId = document.createElement('small');
-        // smallId.setAttribute('class', 'text-body-secondary');
-        // smallId.innerHTML = id;
+        // Buttons
+        var pButtons = document.createElement('p');
+        var btnGroup = document.createElement('div');
+        btnGroup.setAttribute('class', 'btn-group');
+        btnGroup.setAttribute('role', 'group');
+        btnGroup.setAttribute('aria-label', 'note-button-group');
+        // Like Button
+        var btnLike = document.createElement('button');
+        var smallLikes = document.createElement('small');
+        smallLikes.setAttribute('class', 'text-body-secondary');
+        smallLikes.setAttribute('id', `likes-${id}`);
+        smallLikes.innerHTML = "0" + " 👍";
+        btnLike.setAttribute('id', `btn-like-${id}`);
+        btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        btnLike.appendChild(smallLikes);
+        
+        // Zap Button
+        var btnZap = document.createElement('button');
+        var smallZap = document.createElement('small');
+        smallZap.setAttribute('class', 'text-body-secondary');
+        smallZap.setAttribute('id', `zap-${id}`);
+        smallZap.innerHTML = "0" + " sats ⚡️";
+        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
+        btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
+        btnZap.appendChild(smallZap);
+
+        btnGroup.appendChild(btnLike);
+        btnGroup.appendChild(btnZap);
+        pButtons.appendChild(btnGroup);
+
+        var pId = document.createElement('p');
+        var aId = document.createElement('a');
+        aId.setAttribute('class', 'text-body-secondary');
+        aId.setAttribute('href', `/n/${encodedNoteId}`);
+        aId.setAttribute('target', '_blank');
+        aId.innerHTML = encodedNoteId;
+        pId.appendChild(aId);
         
         divCardBody.appendChild(pCardText);
+        divCardBody.appendChild(pButtons);
         divCardBody.appendChild(smallTime);
-        // divCardBody.appendChild(smallId);
+        divCardBody.appendChild(pId);
         
         divCard.appendChild(divCardBody);
         divCol.appendChild(divCard);
         
         document.getElementById('content').appendChild(divCol);
+        nostrGetLikesForPost(id);
+        nostrGetZapsForPost(id);
+        // -- END UNSORTED LOADING -- //
+    });
+
+    // After all data has been received (eose event), sort the dataArray and display data
+    sub.on('eose', () => {
+        // -- START SORTED LOADING -- //
+        // dataArray.sort((a, b) => b.created_at - a.created_at);
+
+        // if(dataArray.length != 0) {
+        //     document.getElementById('notes-loading').style.display = "none";
+        // }
+
+        // // Process the sorted dataArray here
+        // dataArray.forEach((data) => {
+        //     // Your existing code to create and append elements goes here
+        //     // Only show posts without tags (no replies, etc.)
+        //     // if(data.tags.length != 0) {
+        //     //     return;
+        //     // }
+
+        //     // console.log(data.tags)
+
+        //     // Only show posts without tags (no replies, etc.)
+        //     for(var i = 0; i < data.tags.length; i++) {
+        //         if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+        //             return;
+        //         }
+        //     }
+
+        //     const content = data.content.replace(/\r?\n/g, "<br>");
+        //     const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        //     const id = data.id;
+        //     const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
+            
+        //     var divCol = document.createElement('div');
+        //     divCol.setAttribute('class', 'col');
+            
+        //     var divCard = document.createElement('div');
+        //     divCard.setAttribute('class', 'card shadow-sm');
+        //     divCard.setAttribute('id', `card-${id}`);
+            
+        //     var divCardBody = document.createElement('div');
+        //     divCardBody.setAttribute('class', 'card-body');
+            
+        //     var pCardText = document.createElement('p');
+        //     pCardText.setAttribute('class', 'card-text');
+        //     pCardText.innerHTML = content;
+            
+        //     var smallTime = document.createElement('small');
+        //     smallTime.setAttribute('class', 'text-body-secondary');
+        //     smallTime.innerHTML = formattedTime;
+            
+        //     // Buttons
+        //     var pButtons = document.createElement('p');
+        //     var btnGroup = document.createElement('div');
+        //     btnGroup.setAttribute('class', 'btn-group');
+        //     btnGroup.setAttribute('role', 'group');
+        //     btnGroup.setAttribute('aria-label', 'note-button-group');
+        //     // Like Button
+        //     var btnLike = document.createElement('button');
+        //     var smallLikes = document.createElement('small');
+        //     smallLikes.setAttribute('class', 'text-body-secondary');
+        //     smallLikes.setAttribute('id', `likes-${id}`);
+        //     smallLikes.innerHTML = "0" + " 👍";
+        //     btnLike.setAttribute('id', `btn-like-${id}`);
+        //     btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+        //     btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        //     btnLike.appendChild(smallLikes);
+            
+        //     // Zap Button
+        //     var btnZap = document.createElement('button');
+        //     var smallZap = document.createElement('small');
+        //     smallZap.setAttribute('class', 'text-body-secondary');
+        //     smallZap.setAttribute('id', `zap-${id}`);
+        //     smallZap.innerHTML = "0" + " sats ⚡️";
+        //     btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
+        //     btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
+        //     btnZap.appendChild(smallZap);
+
+        //     btnGroup.appendChild(btnLike);
+        //     btnGroup.appendChild(btnZap);
+        //     pButtons.appendChild(btnGroup);
+
+        //     var pId = document.createElement('p');
+        //     var aId = document.createElement('a');
+        //     aId.setAttribute('class', 'text-body-secondary');
+        //     aId.setAttribute('href', `/n/${encodedNoteId}`);
+        //     aId.setAttribute('target', '_blank');
+        //     aId.innerHTML = encodedNoteId;
+        //     pId.appendChild(aId);
+            
+        //     divCardBody.appendChild(pCardText);
+        //     divCardBody.appendChild(pButtons);
+        //     divCardBody.appendChild(smallTime);
+        //     divCardBody.appendChild(pId);
+            
+        //     divCard.appendChild(divCardBody);
+        //     divCol.appendChild(divCard);
+            
+        //     document.getElementById('content').appendChild(divCol);
+        //     nostrGetLikesForPost(id);
+        //     nostrGetZapsForPost(id);
+        // });
+
+        // -- END SORTED LOADING -- //
+
+        sub.unsub();
+    });
+}
+
+async function nostrGetLikesForPost(id) {
+    let userLiked = false;
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [7],
+            "#e": [id],
+        }
+    ])
+    sub.on('event', data => {
+        // console.log(data)
+        const content = data.content;
+        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const reactionId = data.id;
+
+        if(content != "-") {
+            likesId = `likes-${id}`;
+            btnLikeId = `btn-like-${id}`;
+            likesCounter = parseInt(document.getElementById(likesId).innerHTML.split(" ")[0])
+            if(data.pubkey == userPubkey || userLiked) {
+                // console.log(userPubkey + " liked post with id " + id)
+                document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
+                // document.getElementById(likesId).innerHTML = `${likesCounter + 1} 🫂`;
+                userLiked = true;
+            }
+            document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`;
+        }
     })
     sub.on('eose', () => {
         sub.unsub()
     })
 }
 
+async function nostrGetZapsForPost(id) {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [9735],
+            "#e": [id],
+        }
+    ])
+    sub.on('event', data => {
+        // console.log(data)
+        zapId = `zap-${id}`
+        zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
+        const content = data.content;
+        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const reactionId = data.id;
+        let sats = 0;
+        for(let i = 0; i < data.tags.length; i++) {
+            if(data.tags[i][0] == ('bolt11')) {
+                bolt11 = data.tags[i][1];
+                // Remove first 4 characters i.e. 'lnbc'
+                let inputStrWithoutPrefix = bolt11.slice(4);
+                // Get the number after 'lnbc'
+                let numberAfterPrefix = parseInt(bolt11.slice(4).match(/\d+/)[0]);
+                // Get the first letter after the number
+                let letterAfterNumber = inputStrWithoutPrefix.charAt(inputStrWithoutPrefix.search(/[a-zA-Z]/));
+                if(letterAfterNumber == 'm') {
+                    sats = Math.round((numberAfterPrefix * 0.001) * 100000000);
+                } else if(letterAfterNumber == 'u') {
+                    sats = Math.round((numberAfterPrefix * 0.000001) * 100000000);
+                } else if(letterAfterNumber == 'n') {
+                    sats = Math.round((numberAfterPrefix * 0.000000001) * 100000000);
+                } else if(letterAfterNumber == 'p') {
+                    sats = Math.round((numberAfterPrefix * 0.000000000001) * 100000000);
+                }
+            }
+        }
+
+        if(content != "-") {
+            document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
+        }
+
+        // colorize note card based on sats received
+        colorizeNoteCard(id, zapCounter, sats);
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+}
+
+async function colorizeNoteCard(id, zapCounter, sats) {
+    // colorize note card based on sats received
+    if(zapCounter + sats > 420 && zapCounter + sats < 1337) {
+        document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-info');
+    } else if(zapCounter + sats > 1337 && zapCounter + sats < 5000) {
+        document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-warning');
+    } else if(zapCounter + sats > 5000 && zapCounter + sats < 10000) {
+        document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-danger');
+}
+}
+
 function search() {
     let search = document.getElementById('searchbox')
-    window.location.href = `/${search.value}`
+    window.location.href = `/p/${search.value}`
 }
 
 async function fetchTrendingProfilesFromNostrBand() {
@@ -249,7 +618,7 @@ async function fetchTrendingProfilesFromNostrBand() {
 
         // create a element with class "btn btn-primary" and inner text "Go somewhere" with href "#"
         var aBtnPrimary = document.createElement("a");
-        aBtnPrimary.setAttribute("href", `/${pubkeyEncoded}`);
+        aBtnPrimary.setAttribute("href", `/p/${pubkeyEncoded}`);
         aBtnPrimary.setAttribute("class", "btn btn-primary align-self-end");
         aBtnPrimary.innerText = "View Profile";
 
