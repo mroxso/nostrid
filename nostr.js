@@ -53,7 +53,7 @@ async function nostrNewNote() {
     }
     let signedEvent = await window.nostr.signEvent(event);
     console.log(signedEvent);
-    // TODO: Publish signed event
+    pool.publish([...relays], signedEvent);
 }
 
 async function nostrLogin() {
