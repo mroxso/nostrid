@@ -22,7 +22,7 @@ let note = ""
 
 let loginButton = document.getElementById('loginButton');
 let logoutButton = document.getElementById('logoutButton');
-if(userPubkey != null && loginButton != null) {
+if (userPubkey != null && loginButton != null) {
     loginButton.style.display = "none";
     logoutButton.style.display = "block";
 }
@@ -36,6 +36,30 @@ if (window.location.href.split("/")[3] == 'p') {
     note = window.location.href.split("/").pop();
     if (note.startsWith("note")) {
         note = window.NostrTools.nip19.decode(note).data;
+    }
+}
+
+async function nostrLikePost(eventId, pubkey) {
+    console.log("Liking post with id " + eventId)
+    let event = {
+        kind: 7,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+            ["e", eventId],
+            ["p", pubkey],
+        ],
+        content: '+',
+        pubkey: userPubkey,
+    }
+
+    let signedEvent = await window.nostr.signEvent(event)
+
+    let ok = window.NostrTools.validateEvent(signedEvent)
+    let veryOk = window.NostrTools.verifySignature(signedEvent)
+    if(ok && veryOk) {
+        // console.log("Event is valid and signature is valid")
+        let answer = await pool.publish(relays, signedEvent);
+        console.log(answer);
     }
 }
 
@@ -154,18 +178,18 @@ async function nostrGetUserStatus() {
         console.log(data.content)
         const status = data.content;
         let statusLink = "";
-        for(tag of data.tags) {
-            if(tag[0] == "r") {
+        for (tag of data.tags) {
+            if (tag[0] == "r") {
                 statusLink = tag[1];
-            } else if(tag[0] == "p") {
+            } else if (tag[0] == "p") {
                 statusLink = tag[1];
-            } else if(tag[0] == "e") {
+            } else if (tag[0] == "e") {
                 statusLink = tag[1];
-            } else if(tag[0] == "a") {
+            } else if (tag[0] == "a") {
                 statusLink = tag[1];
             }
         }
-        if(statusLink == "") {
+        if (statusLink == "") {
             document.getElementById('status').innerHTML = `${status}`;
         } else {
             document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
@@ -176,7 +200,7 @@ async function nostrGetUserStatus() {
     sub.on('eose', () => {
         sub.unsub()
     })
-} 
+}
 
 async function nostrGetPost(note) {
     console.log(note)
@@ -196,35 +220,36 @@ async function nostrGetPost(note) {
         // console.log(data.tags)
 
         // Only show posts without tags (no replies, etc.)
-        for(var i = 0; i < data.tags.length; i++) {
-            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+        for (var i = 0; i < data.tags.length; i++) {
+            if (data.tags[i][0] == "p" || data.tags[i][0] == "e") {
                 return;
             }
         }
 
         const content = data.content.replace(/\r?\n/g, "<br>");
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const formattedTime = new Date(data.created_at * 1000).toLocaleString();
         const id = data.id;
         const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
-        
+        const noteUserPubkey = data.pubkey
+
         var divCol = document.createElement('div');
         divCol.setAttribute('class', 'col');
-        
+
         var divCard = document.createElement('div');
         divCard.setAttribute('class', 'card shadow-sm');
         divCard.setAttribute('id', `card-${id}`);
 
         var divCardBody = document.createElement('div');
         divCardBody.setAttribute('class', 'card-body');
-        
+
         var pCardText = document.createElement('p');
         pCardText.setAttribute('class', 'card-text');
         pCardText.innerHTML = content;
-        
+
         var smallTime = document.createElement('small');
         smallTime.setAttribute('class', 'text-body-secondary');
         smallTime.innerHTML = formattedTime;
-        
+
         // Buttons
         var pButtons = document.createElement('p');
         var btnGroup = document.createElement('div');
@@ -239,9 +264,9 @@ async function nostrGetPost(note) {
         smallLikes.innerHTML = "0" + " 👍";
         btnLike.setAttribute('id', `btn-like-${id}`);
         btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
-        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        btnLike.setAttribute('onclick', `nostrLikePost("${id}", "${noteUserPubkey}")`);
         btnLike.appendChild(smallLikes);
-        
+
         // Zap Button
         var btnZap = document.createElement('button');
         var smallZap = document.createElement('small');
@@ -261,15 +286,15 @@ async function nostrGetPost(note) {
         smallId.setAttribute('class', 'text-body-secondary');
         smallId.innerHTML = encodedNoteId;
         pId.appendChild(smallId);
-        
+
         divCardBody.appendChild(pCardText);
         divCardBody.appendChild(pButtons);
         divCardBody.appendChild(smallTime);
         divCardBody.appendChild(pId);
-        
+
         divCard.appendChild(divCardBody);
         divCol.appendChild(divCard);
-        
+
         document.getElementById('content').appendChild(divCol);
         nostrGetLikesForPost(id);
         nostrGetZapsForPost(id);
@@ -308,35 +333,36 @@ async function nostrGetPosts() {
         // console.log(data.tags)
 
         // Only show posts without tags (no replies, etc.)
-        for(var i = 0; i < data.tags.length; i++) {
-            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+        for (var i = 0; i < data.tags.length; i++) {
+            if (data.tags[i][0] == "p" || data.tags[i][0] == "e") {
                 return;
             }
         }
 
         const content = data.content.replace(/\r?\n/g, "<br>");
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const formattedTime = new Date(data.created_at * 1000).toLocaleString();
         const id = data.id;
         const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
-        
+        const noteUserPubkey = data.pubkey;
+
         var divCol = document.createElement('div');
         divCol.setAttribute('class', 'col');
-        
+
         var divCard = document.createElement('div');
         divCard.setAttribute('class', 'card shadow-sm');
         divCard.setAttribute('id', `card-${id}`);
-        
+
         var divCardBody = document.createElement('div');
         divCardBody.setAttribute('class', 'card-body');
-        
+
         var pCardText = document.createElement('p');
         pCardText.setAttribute('class', 'card-text');
         pCardText.innerHTML = content;
-        
+
         var smallTime = document.createElement('small');
         smallTime.setAttribute('class', 'text-body-secondary');
         smallTime.innerHTML = formattedTime;
-        
+
         // Buttons
         var pButtons = document.createElement('p');
         var btnGroup = document.createElement('div');
@@ -351,9 +377,9 @@ async function nostrGetPosts() {
         smallLikes.innerHTML = "0" + " 👍";
         btnLike.setAttribute('id', `btn-like-${id}`);
         btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
-        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+        btnLike.setAttribute('onclick', `nostrLikePost("${id}", "${noteUserPubkey}")`);
         btnLike.appendChild(smallLikes);
-        
+
         // Zap Button
         var btnZap = document.createElement('button');
         var smallZap = document.createElement('small');
@@ -375,15 +401,15 @@ async function nostrGetPosts() {
         aId.setAttribute('target', '_blank');
         aId.innerHTML = encodedNoteId;
         pId.appendChild(aId);
-        
+
         divCardBody.appendChild(pCardText);
         divCardBody.appendChild(pButtons);
         divCardBody.appendChild(smallTime);
         divCardBody.appendChild(pId);
-        
+
         divCard.appendChild(divCardBody);
         divCol.appendChild(divCard);
-        
+
         document.getElementById('content').appendChild(divCol);
         nostrGetLikesForPost(id);
         nostrGetZapsForPost(id);
@@ -420,25 +446,25 @@ async function nostrGetPosts() {
         //     const formattedTime = new Date(data.created_at*1000).toLocaleString();
         //     const id = data.id;
         //     const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
-            
+
         //     var divCol = document.createElement('div');
         //     divCol.setAttribute('class', 'col');
-            
+
         //     var divCard = document.createElement('div');
         //     divCard.setAttribute('class', 'card shadow-sm');
         //     divCard.setAttribute('id', `card-${id}`);
-            
+
         //     var divCardBody = document.createElement('div');
         //     divCardBody.setAttribute('class', 'card-body');
-            
+
         //     var pCardText = document.createElement('p');
         //     pCardText.setAttribute('class', 'card-text');
         //     pCardText.innerHTML = content;
-            
+
         //     var smallTime = document.createElement('small');
         //     smallTime.setAttribute('class', 'text-body-secondary');
         //     smallTime.innerHTML = formattedTime;
-            
+
         //     // Buttons
         //     var pButtons = document.createElement('p');
         //     var btnGroup = document.createElement('div');
@@ -455,7 +481,7 @@ async function nostrGetPosts() {
         //     btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
         //     btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
         //     btnLike.appendChild(smallLikes);
-            
+
         //     // Zap Button
         //     var btnZap = document.createElement('button');
         //     var smallZap = document.createElement('small');
@@ -477,15 +503,15 @@ async function nostrGetPosts() {
         //     aId.setAttribute('target', '_blank');
         //     aId.innerHTML = encodedNoteId;
         //     pId.appendChild(aId);
-            
+
         //     divCardBody.appendChild(pCardText);
         //     divCardBody.appendChild(pButtons);
         //     divCardBody.appendChild(smallTime);
         //     divCardBody.appendChild(pId);
-            
+
         //     divCard.appendChild(divCardBody);
         //     divCol.appendChild(divCard);
-            
+
         //     document.getElementById('content').appendChild(divCol);
         //     nostrGetLikesForPost(id);
         //     nostrGetZapsForPost(id);
@@ -508,14 +534,14 @@ async function nostrGetLikesForPost(id) {
     sub.on('event', data => {
         // console.log(data)
         const content = data.content;
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const formattedTime = new Date(data.created_at * 1000).toLocaleString();
         const reactionId = data.id;
 
-        if(content != "-") {
+        if (content != "-") {
             likesId = `likes-${id}`;
             btnLikeId = `btn-like-${id}`;
             likesCounter = parseInt(document.getElementById(likesId).innerHTML.split(" ")[0])
-            if(data.pubkey == userPubkey || userLiked) {
+            if (data.pubkey == userPubkey || userLiked) {
                 // console.log(userPubkey + " liked post with id " + id)
                 document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
                 // document.getElementById(likesId).innerHTML = `${likesCounter + 1} 🫂`;
@@ -541,11 +567,11 @@ async function nostrGetZapsForPost(id) {
         zapId = `zap-${id}`
         zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
         const content = data.content;
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
+        const formattedTime = new Date(data.created_at * 1000).toLocaleString();
         const reactionId = data.id;
         let sats = 0;
-        for(let i = 0; i < data.tags.length; i++) {
-            if(data.tags[i][0] == ('bolt11')) {
+        for (let i = 0; i < data.tags.length; i++) {
+            if (data.tags[i][0] == ('bolt11')) {
                 bolt11 = data.tags[i][1];
                 // Remove first 4 characters i.e. 'lnbc'
                 let inputStrWithoutPrefix = bolt11.slice(4);
@@ -553,19 +579,19 @@ async function nostrGetZapsForPost(id) {
                 let numberAfterPrefix = parseInt(bolt11.slice(4).match(/\d+/)[0]);
                 // Get the first letter after the number
                 let letterAfterNumber = inputStrWithoutPrefix.charAt(inputStrWithoutPrefix.search(/[a-zA-Z]/));
-                if(letterAfterNumber == 'm') {
+                if (letterAfterNumber == 'm') {
                     sats = Math.round((numberAfterPrefix * 0.001) * 100000000);
-                } else if(letterAfterNumber == 'u') {
+                } else if (letterAfterNumber == 'u') {
                     sats = Math.round((numberAfterPrefix * 0.000001) * 100000000);
-                } else if(letterAfterNumber == 'n') {
+                } else if (letterAfterNumber == 'n') {
                     sats = Math.round((numberAfterPrefix * 0.000000001) * 100000000);
-                } else if(letterAfterNumber == 'p') {
+                } else if (letterAfterNumber == 'p') {
                     sats = Math.round((numberAfterPrefix * 0.000000000001) * 100000000);
                 }
             }
         }
 
-        if(content != "-") {
+        if (content != "-") {
             document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
         }
 
@@ -579,13 +605,13 @@ async function nostrGetZapsForPost(id) {
 
 async function colorizeNoteCard(id, zapCounter, sats) {
     // colorize note card based on sats received
-    if(zapCounter + sats > 420 && zapCounter + sats < 1337) {
+    if (zapCounter + sats > 420 && zapCounter + sats < 1337) {
         document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-info');
-    } else if(zapCounter + sats > 1337 && zapCounter + sats < 5000) {
+    } else if (zapCounter + sats > 1337 && zapCounter + sats < 5000) {
         document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-warning');
-    } else if(zapCounter + sats > 5000 && zapCounter + sats < 10000) {
+    } else if (zapCounter + sats > 5000 && zapCounter + sats < 10000) {
         document.getElementById(`card-${id}`).setAttribute('class', 'card shadow-sm border-danger');
-}
+    }
 }
 
 function search() {
@@ -601,7 +627,7 @@ async function fetchTrendingProfilesFromNostrBand() {
 
     let i = 0;
     // while(i < jsonData['profiles'].length) {
-    while(i < 8) {
+    while (i < 8) {
         const profile = jsonData['profiles'][i]
         const pubkey = profile['pubkey']
         const pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey)
@@ -632,7 +658,7 @@ async function fetchTrendingProfilesFromNostrBand() {
         // create img element with src "https://via.placeholder.com/150" and class "card-img-top" with alt "..."
         var imgCard = document.createElement("img");
         let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
-        if(picture != null) {
+        if (picture != null) {
             imgSrc = picture;
         }
         imgCard.setAttribute("src", imgSrc);
