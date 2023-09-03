@@ -18,20 +18,23 @@ let relays = ["wss://relay.nostr.band"];
 
 
 let pubkey = ""
+let pubkeyEncoded = ""
 let note = ""
 
-let loginButton = document.getElementById('loginButton');
-let logoutButton = document.getElementById('logoutButton');
-let noteButton = document.getElementById('noteButton');
+let loginButton = document.getElementById('nostr-login-button');
+let logoutButton = document.getElementById('nostr-logout-button');
+let newNoteButton = document.getElementById('nostr-new-note-button');
 if(userPubkey != null && loginButton != null) {
     loginButton.style.display = "none";
     logoutButton.style.display = "block";
-    noteButton.style.display = "block";
+    if(newNoteButton != null)
+        newNoteButton.style.display = "block";
 }
 
 if (window.location.href.split("/")[3] == 'p') {
     pubkey = window.location.href.split("/").pop();
     if (pubkey.startsWith("npub")) {
+        pubkeyEncoded = pubkey;
         pubkey = window.NostrTools.nip19.decode(pubkey).data;
     }
 } else if (window.location.href.split("/")[3] == 'n') {
@@ -155,6 +158,7 @@ async function nostrGetUserinfo() {
         document.getElementById('website').href = `${website}`;
         if (website != "")
             document.getElementById('website').style = "";
+        document.getElementById('header-title-link').href = `/p/${pubkeyEncoded}`;
     })
     sub.on('eose', () => {
         sub.unsub()
