@@ -43,6 +43,23 @@ if (window.location.href.split("/")[3] == 'p') {
     }
 }
 
+async function nostrNewNote() {
+    content = document.getElementById('newNoteText').value;
+    console.log(content);
+    let event = {
+        kind: 1,
+        pubkey: pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: content,
+    }
+    let signedEvent = await window.nostr.signEvent(event);
+    console.log(signedEvent);
+    pool.publish([...relays], signedEvent);
+    idToNote = window.NostrTools.nip19.noteEncode(signedEvent.id);
+    window.location.href = `/n/${idToNote}`
+}
+
 async function nostrLogin() {
     let publicKey = await window.nostr.getPublicKey();
     console.log("Public Key: " + publicKey);
@@ -96,6 +113,7 @@ async function nostrGetLoginInfo() {
 }
 
 async function nostrGetUserinfo() {
+    nostrGetUserStatus();
     let sub = pool.sub([...relays], [
         {
             kinds: [0],
@@ -145,6 +163,42 @@ async function nostrGetUserinfo() {
         sub.unsub()
     })
 }
+
+async function nostrGetUserStatus() {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [30315],
+            authors: [pubkey],
+            limit: 1
+        }
+    ])
+    sub.on('event', data => {
+        console.log(data.content)
+        const status = data.content;
+        let statusLink = "";
+        for(tag of data.tags) {
+            if(tag[0] == "r") {
+                statusLink = tag[1];
+            } else if(tag[0] == "p") {
+                statusLink = tag[1];
+            } else if(tag[0] == "e") {
+                statusLink = tag[1];
+            } else if(tag[0] == "a") {
+                statusLink = tag[1];
+            }
+        }
+        if(statusLink == "") {
+            document.getElementById('status').innerHTML = `${status}`;
+        } else {
+            document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
+        }
+        if (status != "")
+            document.getElementById('status-div').style = "";
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+} 
 
 async function nostrGetPost(note) {
     console.log(note)
