@@ -14,7 +14,7 @@
 <body>
     <nav class="navbar sticky-top navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Nostrid</a>
+            <a class="navbar-brand" href="/">Nostrid</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -32,7 +32,7 @@
                         <a class="nav-link" aria-current="page" onclick="nostrLogout()">Logout</a>
                     </li>
                     <li id="nostr-new-note-button" class="nav-item" style="display: none;">
-                        <a class="nav-link" aria-current="page" onclick="nostrNewNote()">+</a>
+                        <a class="nav-link" aria-current="page" data-bs-toggle="modal" data-bs-target="#newNoteModal">+</a>
                     </li>
                 </ul>
             </div>

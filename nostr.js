@@ -27,7 +27,8 @@ let newNoteButton = document.getElementById('nostr-new-note-button');
 if(userPubkey != null && loginButton != null) {
     loginButton.style.display = "none";
     logoutButton.style.display = "block";
-    newNoteButton.style.display = "block";
+    if(newNoteButton != null)
+        newNoteButton.style.display = "block";
 }
 
 if (window.location.href.split("/")[3] == 'p') {
