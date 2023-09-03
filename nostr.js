@@ -18,18 +18,23 @@ let relays = ["wss://relay.nostr.band"];
 
 
 let pubkey = ""
+let pubkeyEncoded = ""
 let note = ""
 
-let loginButton = document.getElementById('loginButton');
-let logoutButton = document.getElementById('logoutButton');
-if (userPubkey != null && loginButton != null) {
+let loginButton = document.getElementById('nostr-login-button');
+let logoutButton = document.getElementById('nostr-logout-button');
+let newNoteButton = document.getElementById('nostr-new-note-button');
+if(userPubkey != null && loginButton != null) {
     loginButton.style.display = "none";
     logoutButton.style.display = "block";
+    if(newNoteButton != null)
+        newNoteButton.style.display = "block";
 }
 
 if (window.location.href.split("/")[3] == 'p') {
     pubkey = window.location.href.split("/").pop();
     if (pubkey.startsWith("npub")) {
+        pubkeyEncoded = pubkey;
         pubkey = window.NostrTools.nip19.decode(pubkey).data;
     }
 } else if (window.location.href.split("/")[3] == 'n') {
@@ -61,6 +66,23 @@ async function nostrLikePost(eventId, pubkey) {
         let answer = await pool.publish(relays, signedEvent);
         console.log(answer);
     }
+}
+
+async function nostrNewNote() {
+    content = document.getElementById('newNoteText').value;
+    console.log(content);
+    let event = {
+        kind: 1,
+        pubkey: pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: content,
+    }
+    let signedEvent = await window.nostr.signEvent(event);
+    console.log(signedEvent);
+    pool.publish([...relays], signedEvent);
+    idToNote = window.NostrTools.nip19.noteEncode(signedEvent.id);
+    window.location.href = `/n/${idToNote}`
 }
 
 async function nostrLogin() {
@@ -160,6 +182,7 @@ async function nostrGetUserinfo() {
         document.getElementById('website').href = `${website}`;
         if (website != "")
             document.getElementById('website').style = "";
+        document.getElementById('header-title-link').href = `/p/${pubkeyEncoded}`;
     })
     sub.on('eose', () => {
         sub.unsub()
