@@ -12,24 +12,48 @@
 </head>
 
 <body>
-
-    <nav>
-        <div class="container">
-            <header class="d-flex flex-wrap justify-content-center py-3 mb-4">
-                <a href="/"
-                    class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                    <!-- <svg class="bi me-2" width="40" height="32">
-                        <use xlink:href="#bootstrap"></use>
-                    </svg> -->
-                    <span id="header-title" class="fs-4">Loading Header..</span>
-                </a>
-
-                <!-- <ul class="nav nav-pills">
-                    <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">Home</a></li>
-                </ul> -->
-            </header>
+    <nav class="navbar sticky-top navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Nostrid</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex">
+                    <li id="nostr-login-button" class="nav-item">
+                        <a class="nav-link" aria-current="page" onclick="nostrLogin()">Login</a>
+                    </li>
+                    <li id="nostr-logout-button" class="nav-item" style="display: none;">
+                        <a class="nav-link" aria-current="page" onclick="nostrLogout()">Logout</a>
+                    </li>
+                    <li id="nostr-new-note-button" class="nav-item" style="display: none;">
+                        <a class="nav-link" aria-current="page" onclick="nostrNewNote()">+</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
+    
+    <div class="container">
+        <header class="d-flex flex-wrap justify-content-center py-3 mb-4">
+            <a id="header-title-link" href="/"
+                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+                <!-- <svg class="bi me-2" width="40" height="32">
+                    <use xlink:href="#bootstrap"></use>
+                </svg> -->
+                <span id="header-title" class="fs-4">Loading Name..</span>
+            </a>
+
+            <!-- <ul class="nav nav-pills">
+                <li class="nav-item"><a href="#" class="nav-link active" aria-current="page">Home</a></li>
+            </ul> -->
+        </header>
+    </div>
 
     <div class="container">
         <div class="row grid gap-5">
