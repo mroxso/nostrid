@@ -12,24 +12,34 @@
 </head>
 
 <body>
-
-    <nav>
-        <div class="container">
-            <header class="d-flex flex-wrap justify-content-center py-3 mb-4">
-                <a href="/"
-                    class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                    <span id="header-title" class="fs-4">Nostrid</span>
-                </a>
-
-                <ul class="nav nav-pills">
-                    <li id="loginButton" class="nav-item"><a href="#" class="nav-link active" aria-current="page" onclick="nostrLogin()">Login</a></li>
-                    <li id="logoutButton" style="display: none;" class="nav-item"><a href="#" class="nav-link active" aria-current="page" onclick="nostrLogout()">Logout</a></li>
+    <nav class="navbar sticky-top navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Nostrid</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
                 </ul>
-            </header>
+                <ul class="navbar-nav d-flex">
+                    <li id="nostr-login-button" class="nav-item">
+                        <a class="nav-link" aria-current="page" onclick="nostrLogin()">Login</a>
+                    </li>
+                    <li id="nostr-logout-button" class="nav-item" style="display: none;">
+                        <a class="nav-link" aria-current="page" onclick="nostrLogout()">Logout</a>
+                    </li>
+                    <li id="nostr-new-note-button" class="nav-item" style="display: none;">
+                        <a class="nav-link" aria-current="page" onclick="nostrNewNote()">+</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container mt-3">
         <div class="input-group mb-3">
             <div class="input-group-prepend">
                 <span class="input-group-text" id="basic-addon1">@</span>
