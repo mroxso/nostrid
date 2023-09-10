@@ -291,23 +291,38 @@ async function buildNoteCard(data) {
     btnGroup.setAttribute('class', 'btn-group');
     btnGroup.setAttribute('role', 'group');
     btnGroup.setAttribute('aria-label', 'note-button-group');
+    // Hidden Likes Counter
+    var smallLikesHidden = document.createElement('small');
+    smallLikesHidden.setAttribute('class', 'text-body-secondary');
+    smallLikesHidden.style.display = "none";
+    smallLikesHidden.setAttribute('id', `likes-hidden-${id}`);
+    smallLikesHidden.innerHTML = "0";
     // Like Button
     var btnLike = document.createElement('button');
     var smallLikes = document.createElement('small');
     smallLikes.setAttribute('class', 'text-body-secondary');
     smallLikes.setAttribute('id', `likes-${id}`);
-    smallLikes.innerHTML = "0" + " 👍";
+    // smallLikes.innerHTML = "0" + " 👍";
+    smallLikes.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span role="status"> 👍</span>`;
     btnLike.setAttribute('id', `btn-like-${id}`);
     btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
     btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
     btnLike.appendChild(smallLikes);
     
+
+    // Hidden Zap Counter
+    var smallZapHidden = document.createElement('small');
+    smallZapHidden.setAttribute('class', 'text-body-secondary');
+    smallZapHidden.style.display = "none";
+    smallZapHidden.setAttribute('id', `zap-hidden-${id}`);
+    smallZapHidden.innerHTML = "0";
     // Zap Button
     var btnZap = document.createElement('button');
     var smallZap = document.createElement('small');
     smallZap.setAttribute('class', 'text-body-secondary');
     smallZap.setAttribute('id', `zap-${id}`);
-    smallZap.innerHTML = "0" + " sats ⚡️";
+    // smallZap.innerHTML = "0" + " sats ⚡️";
+    smallZap.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span role="status"> sats ⚡️</span>`;
     btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
     btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
     btnZap.appendChild(smallZap);
@@ -330,6 +345,8 @@ async function buildNoteCard(data) {
     divCardBody.appendChild(pId);
     
     divCard.appendChild(divCardBody);
+    divCard.appendChild(smallLikesHidden);
+    divCard.appendChild(smallZapHidden);
     divCol.appendChild(divCard);
     
     document.getElementById('content').appendChild(divCol);
@@ -353,8 +370,9 @@ async function nostrGetLikesForPost(id) {
 
         if(content != "-") {
             likesId = `likes-${id}`;
+            likesHiddenId = `likes-hidden-${id}`;
             btnLikeId = `btn-like-${id}`;
-            likesCounter = parseInt(document.getElementById(likesId).innerHTML.split(" ")[0])
+            likesCounter = parseInt(document.getElementById(likesHiddenId).innerHTML.split(" ")[0])
             if(data.pubkey == userPubkey || userLiked) {
                 // console.log(userPubkey + " liked post with id " + id)
                 document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
@@ -362,9 +380,12 @@ async function nostrGetLikesForPost(id) {
                 userLiked = true;
             }
             document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`;
+            document.getElementById(likesHiddenId).innerHTML = `${likesCounter + 1}`;
         }
     })
     sub.on('eose', () => {
+        totalLikes = parseInt(document.getElementById(`likes-hidden-${id}`).innerHTML);
+        document.getElementById(`likes-${id}`).innerHTML = `${totalLikes} 👍`;
         sub.unsub()
     })
 }
@@ -379,7 +400,8 @@ async function nostrGetZapsForPost(id) {
     sub.on('event', data => {
         // console.log(data)
         zapId = `zap-${id}`
-        zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
+        zapHiddenId = `zap-hidden-${id}`
+        zapCounter = parseInt(document.getElementById(zapHiddenId).innerHTML.split(" ")[0])
         const content = data.content;
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const reactionId = data.id;
@@ -407,12 +429,15 @@ async function nostrGetZapsForPost(id) {
 
         if(content != "-") {
             document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
+            document.getElementById(zapHiddenId).innerHTML = `${zapCounter + sats}`
         }
 
         // colorize note card based on sats received
         colorizeNoteCard(id, zapCounter, sats);
     })
     sub.on('eose', () => {
+        totalSats = parseInt(document.getElementById(`zap-hidden-${id}`).innerHTML);
+        document.getElementById(`zap-${id}`).innerHTML = `${totalSats} sats ⚡️`;
         sub.unsub()
     })
 }
