@@ -14,22 +14,28 @@ let userPubkey = window.localStorage.getItem("userPubkey");
 const pool = new window.NostrTools.SimplePool();
 // let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
 // let relays = ["wss://relay.damus.io"];
-let relays = ["wss://relay.nostr.band"];
+// let relays = ["wss://relay.nostr.band"];
+let relays = ["wss://nos.lol"];
 
 
 let pubkey = ""
+let pubkeyEncoded = ""
 let note = ""
 
-let loginButton = document.getElementById('loginButton');
-let logoutButton = document.getElementById('logoutButton');
+let loginButton = document.getElementById('nostr-login-button');
+let logoutButton = document.getElementById('nostr-logout-button');
+let newNoteButton = document.getElementById('nostr-new-note-button');
 if(userPubkey != null && loginButton != null) {
     loginButton.style.display = "none";
     logoutButton.style.display = "block";
+    if(newNoteButton != null)
+        newNoteButton.style.display = "block";
 }
 
 if (window.location.href.split("/")[3] == 'p') {
     pubkey = window.location.href.split("/").pop();
     if (pubkey.startsWith("npub")) {
+        pubkeyEncoded = pubkey;
         pubkey = window.NostrTools.nip19.decode(pubkey).data;
     }
 } else if (window.location.href.split("/")[3] == 'n') {
@@ -37,6 +43,23 @@ if (window.location.href.split("/")[3] == 'p') {
     if (note.startsWith("note")) {
         note = window.NostrTools.nip19.decode(note).data;
     }
+}
+
+async function nostrNewNote() {
+    content = document.getElementById('newNoteText').value;
+    console.log(content);
+    let event = {
+        kind: 1,
+        pubkey: pubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: content,
+    }
+    let signedEvent = await window.nostr.signEvent(event);
+    console.log(signedEvent);
+    pool.publish([...relays], signedEvent);
+    idToNote = window.NostrTools.nip19.noteEncode(signedEvent.id);
+    window.location.href = `/n/${idToNote}`
 }
 
 async function nostrLogin() {
@@ -92,6 +115,7 @@ async function nostrGetLoginInfo() {
 }
 
 async function nostrGetUserinfo() {
+    nostrGetUserStatus();
     let sub = pool.sub([...relays], [
         {
             kinds: [0],
@@ -135,11 +159,48 @@ async function nostrGetUserinfo() {
         document.getElementById('website').href = `${website}`;
         if (website != "")
             document.getElementById('website').style = "";
+        document.getElementById('header-title-link').href = `/p/${pubkeyEncoded}`;
     })
     sub.on('eose', () => {
         sub.unsub()
     })
 }
+
+async function nostrGetUserStatus() {
+    let sub = pool.sub([...relays], [
+        {
+            kinds: [30315],
+            authors: [pubkey],
+            limit: 1
+        }
+    ])
+    sub.on('event', data => {
+        console.log(data.content)
+        const status = data.content;
+        let statusLink = "";
+        for(tag of data.tags) {
+            if(tag[0] == "r") {
+                statusLink = tag[1];
+            } else if(tag[0] == "p") {
+                statusLink = tag[1];
+            } else if(tag[0] == "e") {
+                statusLink = tag[1];
+            } else if(tag[0] == "a") {
+                statusLink = tag[1];
+            }
+        }
+        if(statusLink == "") {
+            document.getElementById('status').innerHTML = `${status}`;
+        } else {
+            document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
+        }
+        if (status != "")
+            document.getElementById('status-div').style = "";
+    })
+    sub.on('eose', () => {
+        sub.unsub()
+    })
+} 
 
 async function nostrGetPost(note) {
     console.log(note)
