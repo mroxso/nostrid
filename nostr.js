@@ -12,10 +12,10 @@
 let userPubkey = window.localStorage.getItem("userPubkey");
 
 const pool = new window.NostrTools.SimplePool();
-// let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
+let relays = ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nostr.wine", "wss://nos.lol", "wss://nostr.mom"];
 // let relays = ["wss://relay.damus.io"];
 // let relays = ["wss://relay.nostr.band"];
-let relays = ["wss://nos.lol"];
+// let relays = ["wss://nos.lol"];
 
 
 let pubkey = ""
@@ -175,7 +175,7 @@ async function nostrGetUserStatus() {
         }
     ])
     sub.on('event', data => {
-        console.log(data.content)
+        // console.log(data.content)
         const status = data.content;
         let statusLink = "";
         for(tag of data.tags) {
@@ -203,7 +203,7 @@ async function nostrGetUserStatus() {
 } 
 
 async function nostrGetPost(note) {
-    console.log(note)
+    // console.log(note)
     let sub = pool.sub([...relays], [
         {
             kinds: [1],
@@ -211,92 +211,9 @@ async function nostrGetPost(note) {
         }
     ])
     sub.on('event', data => {
-        console.log(data)
-        // Only show posts without tags (no replies, etc.)
-        // if(data.tags.length != 0) {
-        //     return;
-        // }
-
-        // console.log(data.tags)
-
-        // Only show posts without tags (no replies, etc.)
-        for(var i = 0; i < data.tags.length; i++) {
-            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
-                return;
-            }
-        }
-
-        const content = data.content.replace(/\r?\n/g, "<br>");
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
-        const id = data.id;
-        const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
-        
-        var divCol = document.createElement('div');
-        divCol.setAttribute('class', 'col');
-        
-        var divCard = document.createElement('div');
-        divCard.setAttribute('class', 'card shadow-sm');
-        divCard.setAttribute('id', `card-${id}`);
-
-        var divCardBody = document.createElement('div');
-        divCardBody.setAttribute('class', 'card-body');
-        
-        var pCardText = document.createElement('p');
-        pCardText.setAttribute('class', 'card-text');
-        pCardText.innerHTML = content;
-        
-        var smallTime = document.createElement('small');
-        smallTime.setAttribute('class', 'text-body-secondary');
-        smallTime.innerHTML = formattedTime;
-        
-        // Buttons
-        var pButtons = document.createElement('p');
-        var btnGroup = document.createElement('div');
-        btnGroup.setAttribute('class', 'btn-group');
-        btnGroup.setAttribute('role', 'group');
-        btnGroup.setAttribute('aria-label', 'note-button-group');
-        // Like Button
-        var btnLike = document.createElement('button');
-        var smallLikes = document.createElement('small');
-        smallLikes.setAttribute('class', 'text-body-secondary');
-        smallLikes.setAttribute('id', `likes-${id}`);
-        smallLikes.innerHTML = "0" + " 👍";
-        btnLike.setAttribute('id', `btn-like-${id}`);
-        btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
-        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
-        btnLike.appendChild(smallLikes);
-        
-        // Zap Button
-        var btnZap = document.createElement('button');
-        var smallZap = document.createElement('small');
-        smallZap.setAttribute('class', 'text-body-secondary');
-        smallZap.setAttribute('id', `zap-${id}`);
-        smallZap.innerHTML = "0" + " sats ⚡️";
-        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
-        btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
-        btnZap.appendChild(smallZap);
-
-        btnGroup.appendChild(btnLike);
-        btnGroup.appendChild(btnZap);
-        pButtons.appendChild(btnGroup);
-
-        var pId = document.createElement('p');
-        var smallId = document.createElement('small');
-        smallId.setAttribute('class', 'text-body-secondary');
-        smallId.innerHTML = encodedNoteId;
-        pId.appendChild(smallId);
-        
-        divCardBody.appendChild(pCardText);
-        divCardBody.appendChild(pButtons);
-        divCardBody.appendChild(smallTime);
-        divCardBody.appendChild(pId);
-        
-        divCard.appendChild(divCardBody);
-        divCol.appendChild(divCard);
-        
-        document.getElementById('content').appendChild(divCol);
-        nostrGetLikesForPost(id);
-        nostrGetZapsForPost(id);
+        buildNoteCard(data);
+        nostrGetLikesForPost(data.id);
+        nostrGetZapsForPost(data.id);
         pubkey = data.pubkey;
         nostrGetUserinfo();
     })
@@ -319,206 +236,122 @@ async function nostrGetPosts() {
 
     sub.on('event', data => {
         document.getElementById('notes-loading').style.display = "none";
-
         dataArray.push(data); // Push each data object into the array
-
-        // -- START UNSORTED LOADING -- //
-        // Your existing code to create and append elements goes here
-        // Only show posts without tags (no replies, etc.)
-        // if(data.tags.length != 0) {
-        //     return;
-        // }
-
-        // console.log(data.tags)
-
-        // Only show posts without tags (no replies, etc.)
-        for(var i = 0; i < data.tags.length; i++) {
-            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
-                return;
-            }
-        }
-
-        const content = data.content.replace(/\r?\n/g, "<br>");
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
-        const id = data.id;
-        const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
-        
-        var divCol = document.createElement('div');
-        divCol.setAttribute('class', 'col');
-        
-        var divCard = document.createElement('div');
-        divCard.setAttribute('class', 'card shadow-sm');
-        divCard.setAttribute('id', `card-${id}`);
-        
-        var divCardBody = document.createElement('div');
-        divCardBody.setAttribute('class', 'card-body');
-        
-        var pCardText = document.createElement('p');
-        pCardText.setAttribute('class', 'card-text');
-        pCardText.innerHTML = content;
-        
-        var smallTime = document.createElement('small');
-        smallTime.setAttribute('class', 'text-body-secondary');
-        smallTime.innerHTML = formattedTime;
-        
-        // Buttons
-        var pButtons = document.createElement('p');
-        var btnGroup = document.createElement('div');
-        btnGroup.setAttribute('class', 'btn-group');
-        btnGroup.setAttribute('role', 'group');
-        btnGroup.setAttribute('aria-label', 'note-button-group');
-        // Like Button
-        var btnLike = document.createElement('button');
-        var smallLikes = document.createElement('small');
-        smallLikes.setAttribute('class', 'text-body-secondary');
-        smallLikes.setAttribute('id', `likes-${id}`);
-        smallLikes.innerHTML = "0" + " 👍";
-        btnLike.setAttribute('id', `btn-like-${id}`);
-        btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
-        btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
-        btnLike.appendChild(smallLikes);
-        
-        // Zap Button
-        var btnZap = document.createElement('button');
-        var smallZap = document.createElement('small');
-        smallZap.setAttribute('class', 'text-body-secondary');
-        smallZap.setAttribute('id', `zap-${id}`);
-        smallZap.innerHTML = "0" + " sats ⚡️";
-        btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
-        btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
-        btnZap.appendChild(smallZap);
-
-        btnGroup.appendChild(btnLike);
-        btnGroup.appendChild(btnZap);
-        pButtons.appendChild(btnGroup);
-
-        var pId = document.createElement('p');
-        var aId = document.createElement('a');
-        aId.setAttribute('class', 'text-body-secondary');
-        aId.setAttribute('href', `/n/${encodedNoteId}`);
-        aId.setAttribute('target', '_blank');
-        aId.innerHTML = encodedNoteId;
-        pId.appendChild(aId);
-        
-        divCardBody.appendChild(pCardText);
-        divCardBody.appendChild(pButtons);
-        divCardBody.appendChild(smallTime);
-        divCardBody.appendChild(pId);
-        
-        divCard.appendChild(divCardBody);
-        divCol.appendChild(divCard);
-        
-        document.getElementById('content').appendChild(divCol);
-        nostrGetLikesForPost(id);
-        nostrGetZapsForPost(id);
-        // -- END UNSORTED LOADING -- //
+        buildNoteCard(data);
     });
 
     // After all data has been received (eose event), sort the dataArray and display data
     sub.on('eose', () => {
-        // -- START SORTED LOADING -- //
-        // dataArray.sort((a, b) => b.created_at - a.created_at);
-
-        // if(dataArray.length != 0) {
-        //     document.getElementById('notes-loading').style.display = "none";
-        // }
-
-        // // Process the sorted dataArray here
-        // dataArray.forEach((data) => {
-        //     // Your existing code to create and append elements goes here
-        //     // Only show posts without tags (no replies, etc.)
-        //     // if(data.tags.length != 0) {
-        //     //     return;
-        //     // }
-
-        //     // console.log(data.tags)
-
-        //     // Only show posts without tags (no replies, etc.)
-        //     for(var i = 0; i < data.tags.length; i++) {
-        //         if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
-        //             return;
-        //         }
-        //     }
-
-        //     const content = data.content.replace(/\r?\n/g, "<br>");
-        //     const formattedTime = new Date(data.created_at*1000).toLocaleString();
-        //     const id = data.id;
-        //     const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
-            
-        //     var divCol = document.createElement('div');
-        //     divCol.setAttribute('class', 'col');
-            
-        //     var divCard = document.createElement('div');
-        //     divCard.setAttribute('class', 'card shadow-sm');
-        //     divCard.setAttribute('id', `card-${id}`);
-            
-        //     var divCardBody = document.createElement('div');
-        //     divCardBody.setAttribute('class', 'card-body');
-            
-        //     var pCardText = document.createElement('p');
-        //     pCardText.setAttribute('class', 'card-text');
-        //     pCardText.innerHTML = content;
-            
-        //     var smallTime = document.createElement('small');
-        //     smallTime.setAttribute('class', 'text-body-secondary');
-        //     smallTime.innerHTML = formattedTime;
-            
-        //     // Buttons
-        //     var pButtons = document.createElement('p');
-        //     var btnGroup = document.createElement('div');
-        //     btnGroup.setAttribute('class', 'btn-group');
-        //     btnGroup.setAttribute('role', 'group');
-        //     btnGroup.setAttribute('aria-label', 'note-button-group');
-        //     // Like Button
-        //     var btnLike = document.createElement('button');
-        //     var smallLikes = document.createElement('small');
-        //     smallLikes.setAttribute('class', 'text-body-secondary');
-        //     smallLikes.setAttribute('id', `likes-${id}`);
-        //     smallLikes.innerHTML = "0" + " 👍";
-        //     btnLike.setAttribute('id', `btn-like-${id}`);
-        //     btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
-        //     btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
-        //     btnLike.appendChild(smallLikes);
-            
-        //     // Zap Button
-        //     var btnZap = document.createElement('button');
-        //     var smallZap = document.createElement('small');
-        //     smallZap.setAttribute('class', 'text-body-secondary');
-        //     smallZap.setAttribute('id', `zap-${id}`);
-        //     smallZap.innerHTML = "0" + " sats ⚡️";
-        //     btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
-        //     btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
-        //     btnZap.appendChild(smallZap);
-
-        //     btnGroup.appendChild(btnLike);
-        //     btnGroup.appendChild(btnZap);
-        //     pButtons.appendChild(btnGroup);
-
-        //     var pId = document.createElement('p');
-        //     var aId = document.createElement('a');
-        //     aId.setAttribute('class', 'text-body-secondary');
-        //     aId.setAttribute('href', `/n/${encodedNoteId}`);
-        //     aId.setAttribute('target', '_blank');
-        //     aId.innerHTML = encodedNoteId;
-        //     pId.appendChild(aId);
-            
-        //     divCardBody.appendChild(pCardText);
-        //     divCardBody.appendChild(pButtons);
-        //     divCardBody.appendChild(smallTime);
-        //     divCardBody.appendChild(pId);
-            
-        //     divCard.appendChild(divCardBody);
-        //     divCol.appendChild(divCard);
-            
-        //     document.getElementById('content').appendChild(divCol);
-        //     nostrGetLikesForPost(id);
-        //     nostrGetZapsForPost(id);
-        // });
-
-        // -- END SORTED LOADING -- //
+        dataArray.sort((a, b) => b.created_at - a.created_at);
+        document.getElementById('content').innerHTML = "";
+        dataArray.forEach((data) => {
+            buildNoteCard(data);
+            nostrGetLikesForPost(data.id);
+            nostrGetZapsForPost(data.id);
+        });
 
         sub.unsub();
     });
+}
+
+async function buildNoteCard(data) {
+    // Only show posts without tags (no replies, etc.)
+    for(var i = 0; i < data.tags.length; i++) {
+        if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+            return;
+        }
+    }
+
+    const content = data.content.replace(/\r?\n/g, "<br>");
+    const formattedTime = new Date(data.created_at*1000).toLocaleString();
+    const id = data.id;
+    const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
+    
+    var divCol = document.createElement('div');
+    divCol.setAttribute('class', 'col');
+    
+    var divCard = document.createElement('div');
+    divCard.setAttribute('class', 'card shadow-sm');
+    divCard.setAttribute('id', `card-${id}`);
+    
+    var divCardBody = document.createElement('div');
+    divCardBody.setAttribute('class', 'card-body');
+    
+    var pCardText = document.createElement('p');
+    pCardText.setAttribute('class', 'card-text');
+    pCardText.innerHTML = content;
+    
+    var smallTime = document.createElement('small');
+    smallTime.setAttribute('class', 'text-body-secondary');
+    smallTime.innerHTML = formattedTime;
+    
+    // Buttons
+    var pButtons = document.createElement('p');
+    var btnGroup = document.createElement('div');
+    btnGroup.setAttribute('class', 'btn-group');
+    btnGroup.setAttribute('role', 'group');
+    btnGroup.setAttribute('aria-label', 'note-button-group');
+    // Hidden Likes Counter
+    var smallLikesHidden = document.createElement('small');
+    smallLikesHidden.setAttribute('class', 'text-body-secondary');
+    smallLikesHidden.style.display = "none";
+    smallLikesHidden.setAttribute('id', `likes-hidden-${id}`);
+    smallLikesHidden.innerHTML = "0";
+    // Like Button
+    var btnLike = document.createElement('button');
+    var smallLikes = document.createElement('small');
+    smallLikes.setAttribute('class', 'text-body-secondary');
+    smallLikes.setAttribute('id', `likes-${id}`);
+    // smallLikes.innerHTML = "0" + " 👍";
+    smallLikes.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span role="status"> 👍</span>`;
+    btnLike.setAttribute('id', `btn-like-${id}`);
+    btnLike.setAttribute('class', 'btn btn-sm btn-outline-secondary');
+    btnLike.setAttribute('onclick', `nostrLikePost(${id})`);
+    btnLike.appendChild(smallLikes);
+    
+
+    // Hidden Zap Counter
+    var smallZapHidden = document.createElement('small');
+    smallZapHidden.setAttribute('class', 'text-body-secondary');
+    smallZapHidden.style.display = "none";
+    smallZapHidden.setAttribute('id', `zap-hidden-${id}`);
+    smallZapHidden.innerHTML = "0";
+    // Zap Button
+    var btnZap = document.createElement('button');
+    var smallZap = document.createElement('small');
+    smallZap.setAttribute('class', 'text-body-secondary');
+    smallZap.setAttribute('id', `zap-${id}`);
+    // smallZap.innerHTML = "0" + " sats ⚡️";
+    smallZap.innerHTML = `<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> <span role="status"> sats ⚡️</span>`;
+    btnZap.setAttribute('class', 'btn btn-sm btn-outline-secondary disabled');
+    btnZap.setAttribute('onclick', `nostrZapPost(${id})`);
+    btnZap.appendChild(smallZap);
+
+    btnGroup.appendChild(btnLike);
+    btnGroup.appendChild(btnZap);
+    pButtons.appendChild(btnGroup);
+
+    var pId = document.createElement('p');
+    var aId = document.createElement('a');
+    aId.setAttribute('class', 'text-body-secondary');
+    aId.setAttribute('href', `/n/${encodedNoteId}`);
+    aId.setAttribute('target', '_blank');
+    aId.innerHTML = encodedNoteId;
+    pId.appendChild(aId);
+    
+    divCardBody.appendChild(pCardText);
+    divCardBody.appendChild(pButtons);
+    divCardBody.appendChild(smallTime);
+    divCardBody.appendChild(pId);
+    
+    divCard.appendChild(divCardBody);
+    divCard.appendChild(smallLikesHidden);
+    divCard.appendChild(smallZapHidden);
+    divCol.appendChild(divCard);
+    
+    document.getElementById('content').appendChild(divCol);
+    // nostrGetLikesForPost(id);
+    // nostrGetZapsForPost(id);
 }
 
 async function nostrGetLikesForPost(id) {
@@ -537,8 +370,9 @@ async function nostrGetLikesForPost(id) {
 
         if(content != "-") {
             likesId = `likes-${id}`;
+            likesHiddenId = `likes-hidden-${id}`;
             btnLikeId = `btn-like-${id}`;
-            likesCounter = parseInt(document.getElementById(likesId).innerHTML.split(" ")[0])
+            likesCounter = parseInt(document.getElementById(likesHiddenId).innerHTML.split(" ")[0])
             if(data.pubkey == userPubkey || userLiked) {
                 // console.log(userPubkey + " liked post with id " + id)
                 document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
@@ -546,9 +380,12 @@ async function nostrGetLikesForPost(id) {
                 userLiked = true;
             }
             document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`;
+            document.getElementById(likesHiddenId).innerHTML = `${likesCounter + 1}`;
         }
     })
     sub.on('eose', () => {
+        totalLikes = parseInt(document.getElementById(`likes-hidden-${id}`).innerHTML);
+        document.getElementById(`likes-${id}`).innerHTML = `${totalLikes} 👍`;
         sub.unsub()
     })
 }
@@ -563,7 +400,8 @@ async function nostrGetZapsForPost(id) {
     sub.on('event', data => {
         // console.log(data)
         zapId = `zap-${id}`
-        zapCounter = parseInt(document.getElementById(zapId).innerHTML.split(" ")[0])
+        zapHiddenId = `zap-hidden-${id}`
+        zapCounter = parseInt(document.getElementById(zapHiddenId).innerHTML.split(" ")[0])
         const content = data.content;
         const formattedTime = new Date(data.created_at*1000).toLocaleString();
         const reactionId = data.id;
@@ -591,12 +429,15 @@ async function nostrGetZapsForPost(id) {
 
         if(content != "-") {
             document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
+            document.getElementById(zapHiddenId).innerHTML = `${zapCounter + sats}`
         }
 
         // colorize note card based on sats received
         colorizeNoteCard(id, zapCounter, sats);
     })
     sub.on('eose', () => {
+        totalSats = parseInt(document.getElementById(`zap-hidden-${id}`).innerHTML);
+        document.getElementById(`zap-${id}`).innerHTML = `${totalSats} sats ⚡️`;
         sub.unsub()
     })
 }
