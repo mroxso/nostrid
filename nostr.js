@@ -38,6 +38,10 @@ if (window.location.href.split("/")[3] == 'p') {
         pubkeyEncoded = pubkey;
         pubkey = window.NostrTools.nip19.decode(pubkey).data;
     }
+    if (pubkey.startsWith("nprofile")) {
+        pubkeyEncoded = pubkey;
+        pubkey = window.NostrTools.nip19.decode(pubkey).data.pubkey;
+    }
 } else if (window.location.href.split("/")[3] == 'n') {
     note = window.location.href.split("/").pop();
     if (note.startsWith("note")) {
