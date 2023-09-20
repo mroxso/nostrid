@@ -47,6 +47,9 @@ if (window.location.href.split("/")[3] == 'p') {
     if (note.startsWith("note")) {
         note = window.NostrTools.nip19.decode(note).data;
     }
+    if (note.startsWith("nevent")) {
+        note = window.NostrTools.nip19.decode(note).data.id;
+    }
 }
 
 async function nostrNewNote() {
