@@ -167,6 +167,10 @@ async function nostrGetUserinfo() {
         document.getElementById('website').href = `${website}`;
         if (website != "")
             document.getElementById('website').style = "";
+
+        if(pubkeyEncoded == "") {
+            pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey);
+        }
         document.getElementById('header-title-link').href = `/p/${pubkeyEncoded}`;
     })
     sub.on('eose', () => {
@@ -232,7 +236,7 @@ async function nostrGetPost(note) {
 }
 
 async function nostrGetComments(noteId) {
-    console.log(noteId)
+    // console.log(noteId)
     let sub = pool.sub([...relays], [
         {
             kinds: [1],
