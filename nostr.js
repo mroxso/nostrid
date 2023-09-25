@@ -219,7 +219,7 @@ async function nostrGetPost(note) {
         }
     ])
     sub.on('event', data => {
-        buildNoteCard(data);
+        buildNoteCard(data, false);
         nostrGetLikesForPost(data.id);
         nostrGetZapsForPost(data.id);
         pubkey = data.pubkey;
@@ -264,7 +264,7 @@ async function nostrGetPosts() {
     sub.on('event', data => {
         document.getElementById('notes-loading').style.display = "none";
         dataArray.push(data); // Push each data object into the array
-        buildNoteCard(data);
+        buildNoteCard(data, true);
     });
 
     // After all data has been received (eose event), sort the dataArray and display data
@@ -272,7 +272,7 @@ async function nostrGetPosts() {
         dataArray.sort((a, b) => b.created_at - a.created_at);
         document.getElementById('content').innerHTML = "";
         dataArray.forEach((data) => {
-            buildNoteCard(data);
+            buildNoteCard(data, true);
             nostrGetLikesForPost(data.id);
             nostrGetZapsForPost(data.id);
         });
@@ -381,11 +381,13 @@ async function buildCommentCard(data) {
     // nostrGetZapsForPost(id);
 }
 
-async function buildNoteCard(data) {
+async function buildNoteCard(data, dontShowWhenTags = false) {
     // Only show posts without tags (no replies, etc.)
-    for(var i = 0; i < data.tags.length; i++) {
-        if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
-            return;
+    if(dontShowWhenTags) {
+        for(var i = 0; i < data.tags.length; i++) {
+            if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
+                return;
+            }
         }
     }
 
