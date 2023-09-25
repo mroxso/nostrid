@@ -48,6 +48,7 @@ if (window.location.href.split("/")[3] == 'p') {
         note = window.NostrTools.nip19.decode(note).data;
     }
     if (note.startsWith("nevent")) {
+        relays = window.NostrTools.nip19.decode(note).data.relays;
         note = window.NostrTools.nip19.decode(note).data.id;
     }
 }
