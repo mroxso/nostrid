@@ -141,6 +141,11 @@ async function nostrGetUserinfo() {
         const lightningAddress = JSON.parse(data.content)['lud16'];
         const website = JSON.parse(data.content)['website'];
 
+        let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
+        if(picture == null) {
+             picture = imgSrc;
+        }
+
         if (typeof displayName !== "undefined") {
             document.getElementById('header-title').innerHTML = `${displayName}`;
             document.title = `${displayName}`;
@@ -517,8 +522,12 @@ async function nostrGetLikesForPost(id) {
         }
     })
     sub.on('eose', () => {
-        totalLikes = parseInt(document.getElementById(`likes-hidden-${id}`).innerHTML);
-        document.getElementById(`likes-${id}`).innerHTML = `${totalLikes} 👍`;
+        if(document.getElementById(`likes-hidden-${id}`) == null) {
+            totalLikes = 0;
+        } else {
+            totalLikes = parseInt(document.getElementById(`likes-hidden-${id}`).innerHTML);
+            document.getElementById(`likes-${id}`).innerHTML = `${totalLikes} 👍`;
+        }
         sub.unsub()
     })
 }
@@ -569,8 +578,12 @@ async function nostrGetZapsForPost(id) {
         colorizeNoteCard(id, zapCounter, sats);
     })
     sub.on('eose', () => {
-        totalSats = parseInt(document.getElementById(`zap-hidden-${id}`).innerHTML);
-        document.getElementById(`zap-${id}`).innerHTML = `${totalSats} sats ⚡️`;
+        if(document.getElementById(`zap-hidden-${id}`) == null) {
+            totalSats = 0;
+        } else {
+            totalSats = parseInt(document.getElementById(`zap-hidden-${id}`).innerHTML);
+            document.getElementById(`zap-${id}`).innerHTML = `${totalSats} sats ⚡️`;
+        }
         sub.unsub()
     })
 }
