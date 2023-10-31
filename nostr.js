@@ -391,18 +391,25 @@ async function buildCommentCard(data) {
 }
 
 async function buildNoteCard(data, dontShowWhenTags = false) {
+    imetaUrl = "";
     // Only show posts without tags (no replies, etc.)
     if(dontShowWhenTags) {
         for(var i = 0; i < data.tags.length; i++) {
             if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
                 return;
             }
+            if(data.tags[i][0] == "imeta") {
+                if(data.tags[i][1].includes(".jpg") || data.tags[i][1].includes(".png")) {
+                    imetaUrl = data.tags[i][1].replace("url ", "");
+                }
+            }
         }
     }
 
-    const content = data.content.replace(/\r?\n/g, "<br>");
-    const formattedTime = new Date(data.created_at*1000).toLocaleString();
+    const content = data.content.replace(/\r?\n/g, "<br>").replace(imetaUrl, "");
     const id = data.id;
+    const imeta = data.imeta;
+    const formattedTime = new Date(data.created_at*1000).toLocaleString();
     const encodedNoteId = window.NostrTools.nip19.noteEncode(id);
     
     var divCol = document.createElement('div');
@@ -418,6 +425,10 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
     var pCardText = document.createElement('p');
     pCardText.setAttribute('class', 'card-text');
     pCardText.innerHTML = content;
+
+    var iCardImage = document.createElement('img');
+    iCardImage.setAttribute('class', 'card-img-top p-4');
+    iCardImage.src = imetaUrl;
     
     var smallTime = document.createElement('small');
     smallTime.setAttribute('class', 'text-body-secondary');
@@ -478,6 +489,9 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
     pId.appendChild(aId);
     
     divCardBody.appendChild(pCardText);
+    if(imetaUrl != "") {
+        divCardBody.appendChild(iCardImage);
+    }
     divCardBody.appendChild(pButtons);
     divCardBody.appendChild(smallTime);
     divCardBody.appendChild(pId);
