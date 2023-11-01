@@ -400,16 +400,24 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
             if(data.tags[i][0] == "p" || data.tags[i][0] == "e") {
                 return;
             }
-            if(data.tags[i][0] == "imeta") {
-                if(data.tags[i][1].includes(".jpg") || data.tags[i][1].includes(".png")) {
-                    imetaUrl = data.tags[i][1].replace("url ", "");
-                    image = true;
-                }
-                if(data.tags[i][1].includes(".mov") || data.tags[i][1].includes(".ogg")) {
-                    imetaUrl = data.tags[i][1].replace("url ", "");
-                    video = true;
-                }
+        }
+    }
+    for(var i = 0; i < data.tags.length; i++) {
+        if(data.tags[i][0] == "imeta") {
+            if(data.tags[i][1].includes(".jpg") || data.tags[i][1].includes(".png")) {
+                imetaUrl = data.tags[i][1].replace("url ", "");
+                image = true;
             }
+            if(data.tags[i][1].includes(".mov") || data.tags[i][1].includes(".ogg")) {
+                imetaUrl = data.tags[i][1].replace("url ", "");
+                video = true;
+            }
+        } else if (data.tags[i][0] == "r" && data.tags[i][1].includes(".jpg") || (data.tags[i][0] == "r" && data.tags[i][1].includes(".png"))) {
+            imetaUrl = data.tags[i][1].replace("url ", "");
+            image = true;
+        } else if (data.tags[i][0] == "r" && data.tags[i][1].includes(".mov") || (data.tags[i][0] == "r" && data.tags[i][1].includes(".ogg"))) {
+            imetaUrl = data.tags[i][1].replace("url ", "");
+            video = true;
         }
     }
 
