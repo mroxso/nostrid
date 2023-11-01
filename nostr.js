@@ -392,6 +392,8 @@ async function buildCommentCard(data) {
 
 async function buildNoteCard(data, dontShowWhenTags = false) {
     imetaUrl = "";
+    image = false;
+    video = false;
     // Only show posts without tags (no replies, etc.)
     if(dontShowWhenTags) {
         for(var i = 0; i < data.tags.length; i++) {
@@ -401,6 +403,11 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
             if(data.tags[i][0] == "imeta") {
                 if(data.tags[i][1].includes(".jpg") || data.tags[i][1].includes(".png")) {
                     imetaUrl = data.tags[i][1].replace("url ", "");
+                    image = true;
+                }
+                if(data.tags[i][1].includes(".mov") || data.tags[i][1].includes(".ogg")) {
+                    imetaUrl = data.tags[i][1].replace("url ", "");
+                    video = true;
                 }
             }
         }
@@ -429,6 +436,15 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
     var iCardImage = document.createElement('img');
     iCardImage.setAttribute('class', 'card-img-top p-4');
     iCardImage.src = imetaUrl;
+
+    var vCardVideo = document.createElement('video');
+    vCardVideo.setAttribute('class', 'card-img-top p-4');
+    vCardVideo.src = imetaUrl;
+    vCardVideo.setAttribute('controls', 'true');
+    var vCardVideoSource = document.createElement('source');
+    vCardVideoSource.src = imetaUrl;
+    // vCardVideoSource.type = "video/mp4";
+    vCardVideo.appendChild(vCardVideoSource);
     
     var smallTime = document.createElement('small');
     smallTime.setAttribute('class', 'text-body-secondary');
@@ -489,8 +505,10 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
     pId.appendChild(aId);
     
     divCardBody.appendChild(pCardText);
-    if(imetaUrl != "") {
+    if(image == true) {
         divCardBody.appendChild(iCardImage);
+    } else if(video == true) {
+        divCardBody.appendChild(vCardVideo);
     }
     divCardBody.appendChild(pButtons);
     divCardBody.appendChild(smallTime);
