@@ -87,207 +87,233 @@ function nostrLogout() {
 }
 
 async function nostrGetLoginInfo() {
-    let sub = pool.sub([...relays], [
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [0],
+                authors: [pubkey],
+                limit: 1
+            }
+        ],
         {
-            kinds: [0],
-            authors: [pubkey],
-            limit: 1
-        }
-    ])
-    sub.on('event', data => {
-        // console.log(data.content)
-        const username = JSON.parse(data.content)['username'];
-        const displayName = JSON.parse(data.content)['displayName'];
-        const name = JSON.parse(data.content)['name'];
-        const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");;
-        const picture = JSON.parse(data.content)['picture'];
-        const lightningAddress = JSON.parse(data.content)['lud16'];
-        const website = JSON.parse(data.content)['website'];
+            onevent(data) {
+                // console.log(data.content)
+                const username = JSON.parse(data.content)['username'];
+                const displayName = JSON.parse(data.content)['displayName'];
+                const name = JSON.parse(data.content)['name'];
+                const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");;
+                const picture = JSON.parse(data.content)['picture'];
+                const lightningAddress = JSON.parse(data.content)['lud16'];
+                const website = JSON.parse(data.content)['website'];
 
-        window.localStorage.setItem("about", about);
-        window.localStorage.setItem("picture", picture);
-        window.localStorage.setItem("lightningAddress", lightningAddress);
-        window.localStorage.setItem("website", website);
+                window.localStorage.setItem("about", about);
+                window.localStorage.setItem("picture", picture);
+                window.localStorage.setItem("lightningAddress", lightningAddress);
+                window.localStorage.setItem("website", website);
 
-        if (typeof displayName !== "undefined") {
-            window.localStorage.setItem("name", displayName);
-        } else if (typeof name !== "undefined") {
-            window.localStorage.setItem("name", name);
-        } else {
-            window.localStorage.setItem("name", username);
+                if (typeof displayName !== "undefined") {
+                    window.localStorage.setItem("name", displayName);
+                } else if (typeof name !== "undefined") {
+                    window.localStorage.setItem("name", name);
+                } else {
+                    window.localStorage.setItem("name", username);
+                }
+            },
+            oneose() {
+                h.close()
+            }
         }
-    })
-    sub.on('eose', () => {
-        sub.unsub()
-    })
+    )
 }
 
 async function nostrGetUserinfo() {
     nostrGetUserStatus();
-    let sub = pool.sub([...relays], [
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [0],
+                authors: [pubkey],
+                limit: 10
+            }
+        ],
         {
-            kinds: [0],
-            authors: [pubkey],
-            limit: 10
+            onevent(data) {
+                // console.log(data.content)
+                const username = JSON.parse(data.content)['username'];
+                const displayName = JSON.parse(data.content)['displayName'];
+                const name = JSON.parse(data.content)['name'];
+                const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");
+                const picture = JSON.parse(data.content)['picture'];
+                const lightningAddress = JSON.parse(data.content)['lud16'];
+                const website = JSON.parse(data.content)['website'];
+        
+                let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
+                if(picture == null) {
+                     picture = imgSrc;
+                }
+        
+                if (typeof displayName !== "undefined") {
+                    document.getElementById('header-title').innerHTML = `${displayName}`;
+                    document.title = `${displayName}`;
+                } else if (typeof name !== "undefined") {
+                    document.getElementById('header-title').innerHTML = `${name}`;
+                    document.title = `${name}`;
+                } else {
+                    document.getElementById('header-title').innerHTML = `${username}`;
+                    document.title = `${username}`;
+                }
+                if (typeof name !== "undefined" && typeof username !== "undefined") {
+                    document.title = `${name} (@${username})`;
+                }
+                document.getElementById('about').innerHTML = `${about}`;
+                if (about != "")
+                    document.getElementById('about').style = "";
+                document.getElementById('picture').src = `${picture}`;
+                if (picture != "")
+                    document.getElementById('picture').style = "";
+                document.getElementById('lud16').innerHTML = `⚡️ ${lightningAddress}`;
+                if (lightningAddress != "")
+                    document.getElementById('lud16').style = "";
+                document.getElementById('website').innerHTML = `🌎 ${website}`;
+                document.getElementById('website').href = `${website}`;
+                if (website != "")
+                    document.getElementById('website').style = "";
+        
+                if(pubkeyEncoded == "") {
+                    pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey);
+                }
+                document.getElementById('header-title-link').href = `/p/${pubkeyEncoded}`;
+            },
+            oneose() {
+                h.close()
+            }
         }
-    ])
-    sub.on('event', data => {
-        // console.log(data.content)
-        const username = JSON.parse(data.content)['username'];
-        const displayName = JSON.parse(data.content)['displayName'];
-        const name = JSON.parse(data.content)['name'];
-        const about = JSON.parse(data.content)['about'].replace(/\r?\n/g, "<br>");
-        const picture = JSON.parse(data.content)['picture'];
-        const lightningAddress = JSON.parse(data.content)['lud16'];
-        const website = JSON.parse(data.content)['website'];
-
-        let imgSrc = `https://robohash.org/${pubkeyEncoded}`;
-        if(picture == null) {
-             picture = imgSrc;
-        }
-
-        if (typeof displayName !== "undefined") {
-            document.getElementById('header-title').innerHTML = `${displayName}`;
-            document.title = `${displayName}`;
-        } else if (typeof name !== "undefined") {
-            document.getElementById('header-title').innerHTML = `${name}`;
-            document.title = `${name}`;
-        } else {
-            document.getElementById('header-title').innerHTML = `${username}`;
-            document.title = `${username}`;
-        }
-        if (typeof name !== "undefined" && typeof username !== "undefined") {
-            document.title = `${name} (@${username})`;
-        }
-        document.getElementById('about').innerHTML = `${about}`;
-        if (about != "")
-            document.getElementById('about').style = "";
-        document.getElementById('picture').src = `${picture}`;
-        if (picture != "")
-            document.getElementById('picture').style = "";
-        document.getElementById('lud16').innerHTML = `⚡️ ${lightningAddress}`;
-        if (lightningAddress != "")
-            document.getElementById('lud16').style = "";
-        document.getElementById('website').innerHTML = `🌎 ${website}`;
-        document.getElementById('website').href = `${website}`;
-        if (website != "")
-            document.getElementById('website').style = "";
-
-        if(pubkeyEncoded == "") {
-            pubkeyEncoded = window.NostrTools.nip19.npubEncode(pubkey);
-        }
-        document.getElementById('header-title-link').href = `/p/${pubkeyEncoded}`;
-    })
-    sub.on('eose', () => {
-        sub.unsub()
-    })
+    )
 }
 
 async function nostrGetUserStatus() {
-    let sub = pool.sub([...relays], [
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [30315],
+                authors: [pubkey],
+                limit: 1
+            }
+        ],
         {
-            kinds: [30315],
-            authors: [pubkey],
-            limit: 1
-        }
-    ])
-    sub.on('event', data => {
-        // console.log(data.content)
-        const status = data.content;
-        let statusLink = "";
-        for(tag of data.tags) {
-            if(tag[0] == "r") {
-                statusLink = tag[1];
-            } else if(tag[0] == "p") {
-                statusLink = tag[1];
-            } else if(tag[0] == "e") {
-                statusLink = tag[1];
-            } else if(tag[0] == "a") {
-                statusLink = tag[1];
+            onevent(data) {
+                // console.log(data.content)
+                const status = data.content;
+                let statusLink = "";
+                for(tag of data.tags) {
+                    if(tag[0] == "r") {
+                        statusLink = tag[1];
+                    } else if(tag[0] == "p") {
+                        statusLink = tag[1];
+                    } else if(tag[0] == "e") {
+                        statusLink = tag[1];
+                    } else if(tag[0] == "a") {
+                        statusLink = tag[1];
+                    }
+                }
+                if(statusLink == "") {
+                    document.getElementById('status').innerHTML = `${status}`;
+                } else {
+                    document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
+                }
+                if (status != "")
+                    document.getElementById('status-div').style = "";
+            },
+            oneose() {
+                h.close()
             }
         }
-        if(statusLink == "") {
-            document.getElementById('status').innerHTML = `${status}`;
-        } else {
-            document.getElementById('status').innerHTML = `<a href="${statusLink}" target="_blank">${status}</a>`;
-        }
-        if (status != "")
-            document.getElementById('status-div').style = "";
-    })
-    sub.on('eose', () => {
-        sub.unsub()
-    })
+    )
 } 
 
 async function nostrGetPost(note) {
     // console.log(note)
-    let sub = pool.sub([...relays], [
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [1],
+                ids: [note],
+            }
+        ],
         {
-            kinds: [1],
-            ids: [note],
+            onevent(data) {
+                buildNoteCard(data, false);
+                nostrGetLikesForPost(data.id);
+                nostrGetZapsForPost(data.id);
+                pubkey = data.pubkey;
+                nostrGetUserinfo();
+                nostrGetComments(data.id);
+            },
+            oneose() {
+                h.close()
+            }
         }
-    ])
-    sub.on('event', data => {
-        buildNoteCard(data, false);
-        nostrGetLikesForPost(data.id);
-        nostrGetZapsForPost(data.id);
-        pubkey = data.pubkey;
-        nostrGetUserinfo();
-        nostrGetComments(data.id);
-    })
-    sub.on('eose', () => {
-        sub.unsub()
-    })
+    )
 }
 
 async function nostrGetComments(noteId) {
     // console.log(noteId)
-    let sub = pool.sub([...relays], [
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [1],
+                '#e': [noteId],
+            }
+        ],
         {
-            kinds: [1],
-            '#e': [noteId],
+            onevent(data) {
+                console.log(data);
+                buildCommentCard(data);
+                // nostrGetLikesForPost(data.id);
+                // nostrGetZapsForPost(data.id);
+            },
+            oneose() {
+                h.close()
+            }
         }
-    ])
-    sub.on('event', data => {
-        console.log(data);
-        buildCommentCard(data);
-        // nostrGetLikesForPost(data.id);
-        // nostrGetZapsForPost(data.id);
-    })
-    sub.on('eose', () => {
-        sub.unsub()
-    })
+    )
 }
 
 async function nostrGetPosts() {
-    let sub = pool.sub([...relays], [
-        {
-            kinds: [1],
-            authors: [pubkey],
-        }
-    ])
-
     // Sorting logic
     var dataArray = []; // Create an array to store the data
 
-    sub.on('event', data => {
-        document.getElementById('notes-loading').style.display = "none";
-        dataArray.push(data); // Push each data object into the array
-        buildNoteCard(data, true);
-    });
-
-    // After all data has been received (eose event), sort the dataArray and display data
-    sub.on('eose', () => {
-        dataArray.sort((a, b) => b.created_at - a.created_at);
-        document.getElementById('content').innerHTML = "";
-        dataArray.forEach((data) => {
-            buildNoteCard(data, true);
-            nostrGetLikesForPost(data.id);
-            nostrGetZapsForPost(data.id);
-        });
-
-        sub.unsub();
-    });
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [1],
+                authors: [pubkey],
+            }
+        ],
+        {
+            onevent(data) {
+                document.getElementById('notes-loading').style.display = "none";
+                dataArray.push(data); // Push each data object into the array
+                buildNoteCard(data, true);
+            },
+            oneose() {
+                dataArray.sort((a, b) => b.created_at - a.created_at);
+                document.getElementById('content').innerHTML = "";
+                dataArray.forEach((data) => {
+                    buildNoteCard(data, true);
+                    nostrGetLikesForPost(data.id);
+                    nostrGetZapsForPost(data.id);
+                });
+                h.close()
+            }
+        }
+    )
 }
 
 async function buildCommentCard(data) {
@@ -534,98 +560,109 @@ async function buildNoteCard(data, dontShowWhenTags = false) {
 
 async function nostrGetLikesForPost(id) {
     let userLiked = false;
-    let sub = pool.sub([...relays], [
-        {
-            kinds: [7],
-            "#e": [id],
-        }
-    ])
-    sub.on('event', data => {
-        // console.log(data)
-        const content = data.content;
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
-        const reactionId = data.id;
 
-        if(content != "-") {
-            likesId = `likes-${id}`;
-            likesHiddenId = `likes-hidden-${id}`;
-            btnLikeId = `btn-like-${id}`;
-            likesCounter = parseInt(document.getElementById(likesHiddenId).innerHTML.split(" ")[0])
-            if(data.pubkey == userPubkey || userLiked) {
-                // console.log(userPubkey + " liked post with id " + id)
-                document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
-                // document.getElementById(likesId).innerHTML = `${likesCounter + 1} 🫂`;
-                userLiked = true;
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [7],
+                "#e": [id],
             }
-            document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`;
-            document.getElementById(likesHiddenId).innerHTML = `${likesCounter + 1}`;
+        ],
+        {
+            onevent(data) {
+                const content = data.content;
+                const formattedTime = new Date(data.created_at*1000).toLocaleString();
+                const reactionId = data.id;
+        
+                if(content != "-") {
+                    likesId = `likes-${id}`;
+                    likesHiddenId = `likes-hidden-${id}`;
+                    btnLikeId = `btn-like-${id}`;
+                    likesCounter = parseInt(document.getElementById(likesHiddenId).innerHTML.split(" ")[0])
+                    if(data.pubkey == userPubkey || userLiked) {
+                        // console.log(userPubkey + " liked post with id " + id)
+                        document.getElementById(btnLikeId).setAttribute('class', 'btn btn-sm btn-outline-success');
+                        // document.getElementById(likesId).innerHTML = `${likesCounter + 1} 🫂`;
+                        userLiked = true;
+                    }
+                    document.getElementById(likesId).innerHTML = `${likesCounter + 1} 👍`;
+                    document.getElementById(likesHiddenId).innerHTML = `${likesCounter + 1}`;
+                }
+            },
+            oneose() {
+                if(document.getElementById(`likes-hidden-${id}`) == null) {
+                    totalLikes = 0;
+                } else {
+                    totalLikes = parseInt(document.getElementById(`likes-hidden-${id}`).innerHTML);
+                    document.getElementById(`likes-${id}`).innerHTML = `${totalLikes} 👍`;
+                }
+                h.close()
+            }
         }
-    })
-    sub.on('eose', () => {
-        if(document.getElementById(`likes-hidden-${id}`) == null) {
-            totalLikes = 0;
-        } else {
-            totalLikes = parseInt(document.getElementById(`likes-hidden-${id}`).innerHTML);
-            document.getElementById(`likes-${id}`).innerHTML = `${totalLikes} 👍`;
-        }
-        sub.unsub()
-    })
+    )
 }
 
 async function nostrGetZapsForPost(id) {
-    let sub = pool.sub([...relays], [
+
+    let h = pool.subscribeMany(
+        [...relays],
+        [
+            {
+                kinds: [9735],
+                "#e": [id],
+            }
+        ],
         {
-            kinds: [9735],
-            "#e": [id],
-        }
-    ])
-    sub.on('event', data => {
-        // console.log(data)
-        zapId = `zap-${id}`
-        zapHiddenId = `zap-hidden-${id}`
-        zapCounter = parseInt(document.getElementById(zapHiddenId).innerHTML.split(" ")[0])
-        const content = data.content;
-        const formattedTime = new Date(data.created_at*1000).toLocaleString();
-        const reactionId = data.id;
-        let sats = 0;
-        for(let i = 0; i < data.tags.length; i++) {
-            if(data.tags[i][0] == ('bolt11')) {
-                bolt11 = data.tags[i][1];
-                // Remove first 4 characters i.e. 'lnbc'
-                let inputStrWithoutPrefix = bolt11.slice(4);
-                // Get the number after 'lnbc'
-                let numberAfterPrefix = parseInt(bolt11.slice(4).match(/\d+/)[0]);
-                // Get the first letter after the number
-                let letterAfterNumber = inputStrWithoutPrefix.charAt(inputStrWithoutPrefix.search(/[a-zA-Z]/));
-                if(letterAfterNumber == 'm') {
-                    sats = Math.round((numberAfterPrefix * 0.001) * 100000000);
-                } else if(letterAfterNumber == 'u') {
-                    sats = Math.round((numberAfterPrefix * 0.000001) * 100000000);
-                } else if(letterAfterNumber == 'n') {
-                    sats = Math.round((numberAfterPrefix * 0.000000001) * 100000000);
-                } else if(letterAfterNumber == 'p') {
-                    sats = Math.round((numberAfterPrefix * 0.000000000001) * 100000000);
+            onevent(data) {
+                // console.log(data)
+                zapId = `zap-${id}`
+                zapHiddenId = `zap-hidden-${id}`
+                zapCounter = parseInt(document.getElementById(zapHiddenId).innerHTML.split(" ")[0])
+                const content = data.content;
+                const formattedTime = new Date(data.created_at*1000).toLocaleString();
+                const reactionId = data.id;
+                let sats = 0;
+                for(let i = 0; i < data.tags.length; i++) {
+                    if(data.tags[i][0] == ('bolt11')) {
+                        bolt11 = data.tags[i][1];
+                        // Remove first 4 characters i.e. 'lnbc'
+                        let inputStrWithoutPrefix = bolt11.slice(4);
+                        // Get the number after 'lnbc'
+                        let numberAfterPrefix = parseInt(bolt11.slice(4).match(/\d+/)[0]);
+                        // Get the first letter after the number
+                        let letterAfterNumber = inputStrWithoutPrefix.charAt(inputStrWithoutPrefix.search(/[a-zA-Z]/));
+                        if(letterAfterNumber == 'm') {
+                            sats = Math.round((numberAfterPrefix * 0.001) * 100000000);
+                        } else if(letterAfterNumber == 'u') {
+                            sats = Math.round((numberAfterPrefix * 0.000001) * 100000000);
+                        } else if(letterAfterNumber == 'n') {
+                            sats = Math.round((numberAfterPrefix * 0.000000001) * 100000000);
+                        } else if(letterAfterNumber == 'p') {
+                            sats = Math.round((numberAfterPrefix * 0.000000000001) * 100000000);
+                        }
+                    }
                 }
+
+                if(content != "-") {
+                    document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
+                    document.getElementById(zapHiddenId).innerHTML = `${zapCounter + sats}`
+                }
+
+                // colorize note card based on sats received
+                colorizeNoteCard(id, zapCounter, sats);
+            },
+            oneose() {
+                if(document.getElementById(`zap-hidden-${id}`) == null) {
+                    totalSats = 0;
+                } else {
+                    totalSats = parseInt(document.getElementById(`zap-hidden-${id}`).innerHTML);
+                    document.getElementById(`zap-${id}`).innerHTML = `${totalSats} sats ⚡️`;
+                }
+                h.close()
             }
         }
-
-        if(content != "-") {
-            document.getElementById(zapId).innerHTML = `${zapCounter + sats} sats ⚡️`
-            document.getElementById(zapHiddenId).innerHTML = `${zapCounter + sats}`
-        }
-
-        // colorize note card based on sats received
-        colorizeNoteCard(id, zapCounter, sats);
-    })
-    sub.on('eose', () => {
-        if(document.getElementById(`zap-hidden-${id}`) == null) {
-            totalSats = 0;
-        } else {
-            totalSats = parseInt(document.getElementById(`zap-hidden-${id}`).innerHTML);
-            document.getElementById(`zap-${id}`).innerHTML = `${totalSats} sats ⚡️`;
-        }
-        sub.unsub()
-    })
+    )
 }
 
 async function colorizeNoteCard(id, zapCounter, sats) {
